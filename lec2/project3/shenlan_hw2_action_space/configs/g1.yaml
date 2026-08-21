@@ -1,0 +1,59 @@
+# HoST sim2sim configuration for HW2 Task 2
+# All paths are relative to the shenlan_hw2_task2 folder.
+
+policy_path: "policies/pretrained_humanoid_standup.pt"
+xml_path: "robots/g1/g1_23dof.xml"
+
+# Total simulation time (seconds)
+simulation_duration: 60.0
+# MuJoCo physics timestep (seconds)
+simulation_dt: 0.001
+# Policy update rate: simulation_dt * control_decimation = 0.02 s (50 Hz)
+control_decimation: 20
+
+# PD gains for 23 actuated joints
+kps: [150., 150., 150., 200.,  40.,  40.,
+     150., 150., 150., 200.,  40.,  40.,
+     100.,
+     100., 100., 100.,  100., 100.,
+     100., 100., 100.,  100., 100.]
+
+kds: [4.0000, 4.0000, 4.0000, 6.0000, 2.000, 2.000,
+     4.0000, 4.0000, 4.0000, 6.0000, 2.000, 2.000,
+     4.0000,
+     4.0000, 4.0000, 4.000, 4.0000, 4.0,
+     4.0000, 4.0000, 4.000, 4.0000, 4.0]
+
+torque_limits: [
+  88, 139, 88, 139, 50, 50,
+  88, 139, 88, 139, 50, 50,
+  88, 50, 50,
+  25, 25, 25, 25,
+  25, 25, 25, 25,
+]
+
+# Nominal standing pose (used only for initialization, NOT for HoST action mapping)
+default_angles: [0, 0.0,  -0.1,  0.3, -0.2, 0.0,
+                 0, 0.0,  -0.1,  0.3, -0.2, 0.0,
+                  0,
+                  0,  0.0, 0.0, 0.8, 0.0,
+                  0,  0.0, 0.0, 0.8, 0.0]
+
+# Observation scaling
+ang_vel_scale: 0.25
+dof_pos_scale: 1.0
+dof_vel_scale: 0.05
+
+# Action scaling: joint_position_delta = action_scale * policy_action
+action_scale: 0.25
+
+num_actions: 23
+single_observation_dim: 76
+history_length: 6
+
+# Video recording (optional)
+save_video: True
+video_path: "outputs/simulation.mp4"
+video_fps: 50
+video_width: 1280
+video_height: 720
