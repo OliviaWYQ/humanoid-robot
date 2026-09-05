@@ -5,16 +5,15 @@ import os
 
 SIM2SIM_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(SIM2SIM_DIR, "assets")
-# TRAIN_RUN_DIR = (
-#     "/path/to/unitree_rl_lab/logs/rsl_rl/"
-#     "unitree_g1_29dof_velocity_rough/2026-06-12_10-36-30"
-# )
-TRAIN_RUN_DIR = os.path.join(SIM2SIM_DIR, "policy", "2026-06-12_10-36-30")
+TRAIN_RUN_DIR = (
+    "/home/star/projects/unitree_rl_lab/logs/rsl_rl/"
+    "unitree_g1_29dof_velocity_rough/2026-08-23_17-38-40"
+)
 
 # ROBOT_SCENE = os.path.join(ASSETS_DIR, "scene_flat.xml")
 ROBOT_SCENE = os.path.join(ASSETS_DIR, "scene_rough.xml")
 
-RAYCASTER_PLUGIN_LIBRARY = "/path/to/mujoco/build/lib/libsensor_raycaster.so"
+RAYCASTER_PLUGIN_LIBRARY = "/home/star/mujoco_src/build_381/lib/libsensor_raycaster.so"
 
 # POLICY_PATH = os.path.join(TRAIN_RUN_DIR, "model_14999.pt")
 POLICY_PATH = os.path.join(TRAIN_RUN_DIR, "exported", "policy.pt")

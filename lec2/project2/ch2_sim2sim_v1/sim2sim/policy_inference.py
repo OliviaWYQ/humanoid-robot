@@ -32,7 +32,25 @@ class ActorFromCheckpoint(torch.nn.Module):
         self.actor = torch.nn.Sequential(*layers)
         self.actor.load_state_dict(actor_state)
 
+        # RSL-RL stores the empirical observation normalizer as a separate
+        # module (`actor_obs_normalizer`) applied BEFORE the actor MLP.
+        # Rebuild it here so raw checkpoints behave like the exported policy.
+        if "actor_obs_normalizer._mean" in state_dict:
+            self.register_buffer(
+                "norm_mean", state_dict["actor_obs_normalizer._mean"].float()
+            )
+            self.register_buffer(
+                "norm_std", state_dict["actor_obs_normalizer._std"].float()
+            )
+            # rsl_rl EmpiricalNormalization default eps
+            self.norm_eps = 1e-2
+        else:
+            self.register_buffer("norm_mean", None)
+            self.register_buffer("norm_std", None)
+
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        if self.norm_mean is not None:
+            obs = (obs - self.norm_mean) / (self.norm_std + self.norm_eps)
         return self.actor(obs)
 
 
