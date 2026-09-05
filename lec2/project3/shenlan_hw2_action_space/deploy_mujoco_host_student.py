@@ -90,8 +90,23 @@ def read_robot_state(mj_data, dof_pos_scale, dof_vel_scale, ang_vel_scale):
     #        base_angular_velocity_obs = base_angular_velocity * ang_vel_scale
     #   6. Compute projected_gravity with get_gravity_orientation(base_quat_wxyz).
     #
-    # Your code here:
-    raise NotImplementedError("TODO 1: implement read_robot_state()")
+    current_joint_positions = mj_data.qpos[7:].copy()
+    raw_joint_velocities = mj_data.qvel[6:].copy()
+    base_quat_wxyz = mj_data.qpos[3:7].copy()
+    base_angular_velocity = mj_data.qvel[3:6].copy()
+
+    joint_positions_for_obs = current_joint_positions * dof_pos_scale
+    joint_velocities_for_obs = raw_joint_velocities * dof_vel_scale
+    base_angular_velocity_obs = base_angular_velocity * ang_vel_scale
+    projected_gravity = get_gravity_orientation(base_quat_wxyz)
+
+    return (
+        current_joint_positions,
+        joint_positions_for_obs,
+        joint_velocities_for_obs,
+        base_angular_velocity_obs,
+        projected_gravity,
+    )
 
 
 def build_single_observation(
@@ -118,8 +133,17 @@ def build_single_observation(
     #
     # Verify: current_obs.shape == (76,)
     #
-    # Your code here:
-    raise NotImplementedError("TODO 2: implement build_single_observation()")
+    current_obs = np.concatenate(
+        (
+            base_angular_velocity_obs,
+            projected_gravity,
+            joint_positions_for_obs,
+            joint_velocities_for_obs,
+            previous_policy_action,
+            np.array([action_scale]),
+        )
+    )
+    return current_obs
 
 
 def update_observation_history(observation_history, current_obs, single_observation_dim, history_length):
@@ -138,8 +162,10 @@ def update_observation_history(observation_history, current_obs, single_observat
     #   observation_history.shape == (single_observation_dim * history_length,)
     #   For the default config: (76 * 6,) = (456,)
     #
-    # Your code here:
-    raise NotImplementedError("TODO 3: implement update_observation_history()")
+    observation_history = np.concatenate(
+        (observation_history[single_observation_dim:], current_obs)
+    )
+    return observation_history
 
 
 def action_to_joint_targets(policy_action, current_joint_positions, action_scale):
@@ -160,8 +186,10 @@ def action_to_joint_targets(policy_action, current_joint_positions, action_scale
     # Return:
     #   target_joint_positions with shape (23,)
     #
-    # Your code here:
-    raise NotImplementedError("TODO 4: implement action_to_joint_targets()")
+    target_joint_positions = (
+        current_joint_positions + action_scale * policy_action
+    )
+    return target_joint_positions
 
 
 def main():
