@@ -59,14 +59,16 @@ def select_gpus(
       for x in existing_visible_devices.split(",")
       if x.strip()
     ]
-    # Empty CUDA_VISIBLE_DEVICES means CPU mode.
-    if not available_gpus:
-      return None, 0
   else:
     # If not set, default to all available GPUs.
     import torch.cuda
 
     available_gpus: list[GpuId] = list(range(torch.cuda.device_count()))
+
+  # Use CPU when CUDA is unavailable, including Apple Silicon with no explicit
+  # CUDA_VISIBLE_DEVICES. The default gpu_ids=[0] must not index an empty list.
+  if not available_gpus:
+    return None, 0
 
   # Map gpu_ids indices to actual GPU IDs.
   selected: list[GpuId]

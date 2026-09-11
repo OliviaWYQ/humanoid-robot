@@ -41,7 +41,9 @@ def list_environments(keyword: str | None = None):
 
 
 def main():
-  return tyro.cli(list_environments, config=mjlab.TYRO_FLAGS)
+  # Console entry points pass the return value to sys.exit(); the number of
+  # matching environments is not an error code.
+  tyro.cli(list_environments, config=mjlab.TYRO_FLAGS)
 
 
 if __name__ == "__main__":

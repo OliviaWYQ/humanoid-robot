@@ -1,10 +1,10 @@
-from __future__ import annotations
-
 """Height command term for pelvis/root absolute height.
 
 Homework TODOs in this file: 1, 2  (of 10 total)
 Index: docs/HOMEWORK_TODO.md · grep: 【作业 TODO
 """
+
+from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class UniformBaseHeightCommand(CommandTerm):
-  """Uniformly sampled absolute pelvis/root height command above terrain."""
+  """Uniformly sampled absolute world-z pelvis/root height on flat ground."""
 
   cfg: UniformBaseHeightCommandCfg
 
@@ -49,34 +49,19 @@ class UniformBaseHeightCommand(CommandTerm):
     max_command_time = self.cfg.resampling_time_range[1]
     max_command_step = max_command_time / self._env.step_dt
     # >>> HOMEWORK_TODO_2_START
-    # ==============================================================================
-    # 【作业 TODO 2/10】高度跟踪误差指标
-    # 位置: height_command.py · UniformBaseHeightCommand._update_metrics
-    # 提示: 记录 |指令高度 - 实际高度| 的累积均值，用于训练日志与调试。
-    # 概念: metrics["error_height"]、root_link_pos_w[:, 2]
-    # 索引: docs/HOMEWORK_TODO.md
-    # ==============================================================================
-    raise NotImplementedError("TODO 2: 实现 height_error 与 metrics 更新")
-    # --- 实现提示 ---
-    # - 从 self.robot.data 读取骨盆世界坐标 z（root_link_pos_w[:, 2]）
-    # - 计算 |指令高度 - 实际高度|，累加进 metrics["error_height"]（除以 max_command_step）
-    # - 同步更新 metrics["target_height_mean"]
+    # 【作业 TODO 2/10 已完成】按最长指令周期归一化累计绝对高度误差。
+    actual_height = self.robot.data.root_link_pos_w[:, 2]
+    height_error = torch.abs(self.height_command[:, 0] - actual_height)
+    self.metrics["error_height"] += height_error / max_command_step
+    # 拷贝数值，避免 metrics reset 原地清零时修改高度指令的共享视图。
+    self.metrics["target_height_mean"].copy_(self.height_command[:, 0])
     # <<< HOMEWORK_TODO_2_END
 
   def _resample_command(self, env_ids: torch.Tensor) -> None:
     r = torch.empty(len(env_ids), device=self.device)
     # >>> HOMEWORK_TODO_1_START
-    # ==============================================================================
-    # 【作业 TODO 1/10】高度指令均匀采样
-    # 位置: height_command.py · UniformBaseHeightCommand._resample_command
-    # 提示: 在 cfg.ranges.height 范围内均匀随机采样新高度指令。
-    # 概念: torch.uniform_、UniformBaseHeightCommandCfg.ranges
-    # 索引: docs/HOMEWORK_TODO.md
-    # ==============================================================================
-    raise NotImplementedError("TODO 1: 实现 height_command 均匀采样")
-    # --- 实现提示 ---
-    # - 使用已创建的 r 张量，对 height_command[env_ids, 0] 做均匀随机采样
-    # - 采样上下界来自 self.cfg.ranges.height
+    # 【作业 TODO 1/10 已完成】仅重采样指定环境，保持其余环境的指令不变。
+    self.height_command[env_ids, 0] = r.uniform_(*self.cfg.ranges.height)
     # <<< HOMEWORK_TODO_1_END
 
   def _update_command(self) -> None:

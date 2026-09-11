@@ -153,6 +153,7 @@ def unitree_g1_base_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg.rewards["angular_momentum"].weight = -0.02
   cfg.rewards["air_time"].weight = 0.0
 
+  # Penalty：惩罚超过阈值的自碰撞接触，避免肢体互相撞击。
   cfg.rewards["self_collisions"] = RewardTermCfg(
     func=mdp.self_collision_cost,
     weight=-1.0,
@@ -183,47 +184,32 @@ def unitree_g1_flat_height_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg = unitree_g1_flat_env_cfg(play=play)
 
   # >>> HOMEWORK_TODO_3_START
-  # ==============================================================================
-  # 【作业 TODO 3/10】注册 base_height 命令
-  # 位置: config/g1/env_cfgs.py · unitree_g1_flat_height_env_cfg
-  # 提示: 高度指令是 height 任务的输入；entity_name 应对应 scene 中的 robot。
-  # 概念: UniformBaseHeightCommandCfg、resampling_time_range、ranges.height
-  # 索引: docs/HOMEWORK_TODO.md · 完整说明见 docs/HW3_蹲姿行走策略.md
-  # ==============================================================================
-  # --- 实现提示 ---
-  # - 向 cfg.commands 注册 "base_height"
-  # - 参考 velocity_env_cfg.py 中 commands["velocity"] 的写法
-  # - 需配置 entity_name、resampling_time_range、ranges.height（见 HW3 §2.2 / §6）
+  # 【作业 TODO 3/10 已完成】平地上跟踪骨盆世界坐标 z，独立采样高度。
+  cfg.commands["base_height"] = UniformBaseHeightCommandCfg(
+    entity_name="robot",
+    resampling_time_range=(3.0, 8.0),
+    ranges=UniformBaseHeightCommandCfg.Ranges(height=(0.45, 0.80)),
+    debug_vis=True,
+  )
   # <<< HOMEWORK_TODO_3_END
 
   # >>> HOMEWORK_TODO_4_START
-  # ==============================================================================
-  # 【作业 TODO 4/10】接入 height_command 观测（蹲姿/高度任务核心观测）
-  # 位置: config/g1/env_cfgs.py · unitree_g1_flat_height_env_cfg
-  # 提示: 策略必须能观测到 base_height 指令；command_name 与 commands 键一致。
-  # 概念: ObservationTermCfg、generated_commands、actor/critic 观测拼接
-  # 索引: docs/HOMEWORK_TODO.md · 完整说明见 docs/HW3_蹲姿行走策略.md
-  # ==============================================================================
-  height_command_obs = ObservationTermCfg(
-    func=envs_mdp.generated_commands,
-    params={"command_name": "TODO"},  # TODO 4: 替换为正确的 command 名称
-  )
-  # --- 实现提示 ---
-  # - params["command_name"] 须与 TODO 3 注册的 commands 键一致
-  # - 将 height_command 观测项加入 cfg.observations["actor"] 与 ["critic"] 的 terms
+  # 【作业 TODO 4/10 已完成】Actor 与 Critic 都需要知道当前目标高度。
+  for group in ("actor", "critic"):
+    cfg.observations[group].terms["height_command"] = ObservationTermCfg(
+      func=envs_mdp.generated_commands,
+      params={"command_name": "base_height"},
+    )
   # <<< HOMEWORK_TODO_4_END
 
   # >>> HOMEWORK_TODO_5_START
-  # ==============================================================================
-  # 【作业 TODO 5/10】注册 track_base_height 奖励项（蹲姿/高度任务核心奖励）
-  # 位置: config/g1/env_cfgs.py · unitree_g1_flat_height_env_cfg
-  # 提示: 将 track_base_height 接入奖励管理器；weight/std 已预填，无需修改。
-  # 概念: RewardTermCfg、command_name="base_height"
-  # 索引: docs/HOMEWORK_TODO.md · 完整说明见 docs/HW3_蹲姿行走策略.md
-  # ==============================================================================
-  # --- 实现提示 ---
-  # - 向 cfg.rewards 注册 "track_base_height"
-  # - func 指向 mdp.track_base_height；params 含 command_name 与 std（见 HW3 §6 TODO 5）
+  # 【作业 TODO 5/10 已完成】Task：以高度奖励补充速度跟踪，权重按文档取 1。
+  # 作业包缺少文档所述的预填 std，取 0.1 m：误差 10 cm 时奖励为 exp(-1)。
+  cfg.rewards["track_base_height"] = RewardTermCfg(
+    func=mdp.track_base_height,
+    weight=1.0,
+    params={"command_name": "base_height", "std": 0.1},
+  )
   # <<< HOMEWORK_TODO_5_END
 
   return cfg

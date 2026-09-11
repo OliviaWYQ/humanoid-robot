@@ -43,17 +43,8 @@ def foot_contact(env: ManagerBasedRlEnv, sensor_name: str) -> torch.Tensor:
   sensor_data = sensor.data
   assert sensor_data.found is not None
   # >>> HOMEWORK_TODO_10_START
-  # ==============================================================================
-  # 【作业 TODO 10/10】足部接触特权观测（Critic）
-  # 位置: mdp/observations.py · foot_contact
-  # 提示: 将 found>0 转为 0/1 浮点张量，供 critic 估计 value（actor 不可见）。
-  # 概念: ContactSensor.data.found、privileged observations
-  # 索引: docs/HOMEWORK_TODO.md
-  # ==============================================================================
-  raise NotImplementedError("TODO 10: 返回足部接触布尔/浮点张量")
-  # --- 实现提示 ---
-  # - 基于 sensor_data.found 构造 0/1 浮点张量（非 bool）
-  # - shape 应为 [num_envs, num_feet]；供 critic 特权观测使用
+  # 【作业 TODO 10/10 已完成】Critic 特权信息：每只脚是否接触地面。
+  return (sensor_data.found > 0).float()
   # <<< HOMEWORK_TODO_10_END
 
 

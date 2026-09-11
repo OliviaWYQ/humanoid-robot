@@ -246,16 +246,19 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
   ##
 
   rewards = {
+    # Task：跟踪平面速度并抑制竖直漂移，权重 2 保持行走任务优先。
     "track_linear_velocity": RewardTermCfg(
       func=mdp.track_linear_velocity,
       weight=2.0,
       params={"command_name": "velocity", "std": math.sqrt(0.25)},
     ),
+    # Task：跟踪转向指令并抑制横滚/俯仰角速度。
     "track_angular_velocity": RewardTermCfg(
       func=mdp.track_angular_velocity,
       weight=2.0,
       params={"command_name": "velocity", "std": math.sqrt(0.5)},
     ),
+    # Style：保持躯干直立，允许通过腿部弯曲调整骨盆高度。
     "upright": RewardTermCfg(
       func=mdp.upright,
       weight=1.0,
@@ -264,6 +267,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "asset_cfg": SceneEntityCfg("robot", body_names=()),  # Set per-robot.
       },
     ),
+    # Style：按速度选择关节姿态容差，约束步态且保留运动自由度。
     "pose": RewardTermCfg(
       func=mdp.variable_posture,
       weight=1.0,
@@ -277,18 +281,23 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "running_threshold": 1.5,
       },
     ),
+    # Penalty：惩罚躯干角速度，减少晃动。
     "body_ang_vel": RewardTermCfg(
       func=mdp.body_angular_velocity_penalty,
       weight=0.0,  # Override per-robot
       params={"asset_cfg": SceneEntityCfg("robot", body_names=())},  # Set per-robot.
     ),
+    # Penalty：惩罚整体角动量，抑制不稳定旋转。
     "angular_momentum": RewardTermCfg(
       func=mdp.angular_momentum_penalty,
       weight=0.0,  # Override per-robot
       params={"sensor_name": "robot/root_angmom"},
     ),
+    # Penalty：惩罚超出关节软限位。
     "dof_pos_limits": RewardTermCfg(func=mdp.joint_pos_limits, weight=-1.0),
+    # Reg：惩罚相邻动作变化，减少控制抖动。
     "action_rate_l2": RewardTermCfg(func=mdp.action_rate_l2, weight=-0.1),
+    # Style：鼓励合理腾空时长；G1 预设权重为 0，保留作消融项。
     "air_time": RewardTermCfg(
       func=mdp.feet_air_time,
       weight=0.0,  # Override per-robot.
@@ -300,6 +309,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "command_threshold": 0.5,
       },
     ),
+    # Penalty：约束行走时足部离地高度，减少拖地。
     "foot_clearance": RewardTermCfg(
       func=mdp.feet_clearance,
       weight=-2.0,
@@ -311,6 +321,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "asset_cfg": SceneEntityCfg("robot", site_names=()),  # Set per-robot.
       },
     ),
+    # Penalty：约束摆腿最高点，避免抬脚过低或过高。
     "foot_swing_height": RewardTermCfg(
       func=mdp.feet_swing_height,
       weight=-0.25,
@@ -322,6 +333,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "command_threshold": 0.05,
       },
     ),
+    # Penalty：惩罚接触阶段足部滑移。
     "foot_slip": RewardTermCfg(
       func=mdp.feet_slip,
       weight=-0.1,
@@ -332,6 +344,7 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
         "asset_cfg": SceneEntityCfg("robot", site_names=()),  # Set per-robot.
       },
     ),
+    # Reg：惩罚落地冲击，使接触更平缓。
     "soft_landing": RewardTermCfg(
       func=mdp.soft_landing,
       weight=-1e-5,
@@ -361,26 +374,19 @@ def make_velocity_env_cfg() -> ManagerBasedRlEnvCfg:
 
   curriculum = {
     # >>> HOMEWORK_TODO_9_START
-    # ==============================================================================
-    # 【作业 TODO 9/10】速度指令课程学习
-    # 位置: velocity_env_cfg.py · curriculum["command_vel"]
-    # 提示: 随训练步数逐步扩大 lin_vel_x / ang_vel_z 采样范围，由易到难。
-    # 概念: commands_vel curriculum、velocity_stages
-    # 索引: docs/HOMEWORK_TODO.md
-    # ==============================================================================
+    # 【作业 TODO 9/10 已完成】每次 rollout 为 24 步，逐阶段扩大速度范围。
     "command_vel": CurriculumTermCfg(
       func=mdp.commands_vel,
       params={
         "command_name": "velocity",
         "velocity_stages": [
           {"step": 0, "lin_vel_x": (-1.0, 1.0), "ang_vel_z": (-0.5, 0.5)},
-          # TODO 9: 在此列表中添加 step=5000*24 和 step=10000*24 两个阶段
+          {"step": 5000 * 24, "lin_vel_x": (-1.5, 2.0), "ang_vel_z": (-0.7, 0.7)},
+          # 不指定 ang_vel_z，保留上一阶段的 (-0.7, 0.7)。
+          {"step": 10000 * 24, "lin_vel_x": (-2.0, 3.0)},
         ],
       },
     ),
-    # --- 实现提示 ---
-    # - 在 velocity_stages 列表中追加 Stage 1、Stage 2（Stage 0 已给出）
-    # - step 约为 5000*24 与 10000*24；速度范围见 HW3 §2.5 课程表
     # <<< HOMEWORK_TODO_9_END
   }
 

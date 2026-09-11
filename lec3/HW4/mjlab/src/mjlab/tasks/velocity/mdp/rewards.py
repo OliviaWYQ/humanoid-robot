@@ -45,18 +45,11 @@ def track_linear_velocity(
   assert command is not None, f"Command '{command_name}' not found."
   actual = asset.data.root_link_lin_vel_b
   # >>> HOMEWORK_TODO_7_START
-  # ==============================================================================
-  # 【作业 TODO 7/10】线速度跟踪误差
-  # 位置: mdp/rewards.py · track_linear_velocity
-  # 提示: xy 平面跟踪指令速度；z 方向速度应接近 0（惩罚 vertical 漂移）。
-  # 概念: root_link_lin_vel_b、高斯奖励 exp(-error/std²)
-  # 索引: docs/HOMEWORK_TODO.md
-  # ==============================================================================
-  raise NotImplementedError("TODO 7: 实现 xy_error、z_error 与 lin_vel_error")
-  # --- 实现提示 ---
-  # - actual 为 body frame 线速度（root_link_lin_vel_b）
-  # - xy 平面：跟踪 command[:, :2]；z 方向：惩罚偏离 0 的 vertical 漂移
-  # - 合成误差后返回 exp(-error / std**2)
+  # 【作业 TODO 7/10 已完成】Task：跟踪机体坐标 xy 速度，并抑制竖直漂移。
+  xy_error = torch.sum(torch.square(command[:, :2] - actual[:, :2]), dim=1)
+  z_error = torch.square(actual[:, 2])
+  lin_vel_error = xy_error + z_error
+  return torch.exp(-lin_vel_error / std**2)
   # <<< HOMEWORK_TODO_7_END
 
 
@@ -71,18 +64,10 @@ def track_base_height(
   command = env.command_manager.get_command(command_name)
   assert command is not None, f"Command '{command_name}' not found."
   # >>> HOMEWORK_TODO_6_START
-  # ==============================================================================
-  # 【作业 TODO 6/10】高度跟踪奖励（蹲姿/高度任务核心）
-  # 位置: mdp/rewards.py · track_base_height
-  # 提示: actual_height 为骨盆世界坐标 z；height_error 为指令与实际的平方差。
-  # 概念: root_link_pos_w[:, 2]、exp(-error²/std²)
-  # 索引: docs/HOMEWORK_TODO.md
-  # ==============================================================================
-  raise NotImplementedError("TODO 6: 实现 actual_height、height_error 与 return")
-  # --- 实现提示 ---
-  # - 从 asset.data 读取骨盆世界坐标高度（z 分量）
-  # - 与 command[:, 0] 计算平方误差
-  # - 返回 exp(-error / std**2)，shape 为 [num_envs]
+  # 【作业 TODO 6/10 已完成】Task：以世界坐标绝对高度控制蹲低/站高。
+  actual_height = asset.data.root_link_pos_w[:, 2]
+  height_error = torch.square(command[:, 0] - actual_height)
+  return torch.exp(-height_error / std**2)
   # <<< HOMEWORK_TODO_6_END
 
 
@@ -92,7 +77,7 @@ def track_angular_velocity(
   command_name: str,
   asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
 ) -> torch.Tensor:
-  """Reward heading error for heading-controlled envs, angular velocity for others.
+  """Reward for tracking the commanded body-frame yaw angular velocity.
 
   The commanded xy angular velocities are assumed to be zero.
   """
@@ -101,18 +86,11 @@ def track_angular_velocity(
   assert command is not None, f"Command '{command_name}' not found."
   actual = asset.data.root_link_ang_vel_b
   # >>> HOMEWORK_TODO_8_START
-  # ==============================================================================
-  # 【作业 TODO 8/10】角速度跟踪误差
-  # 位置: mdp/rewards.py · track_angular_velocity
-  # 提示: z 轴跟踪 yaw 角速度指令；xy 角速度应接近 0（惩罚 roll/pitch）。
-  # 概念: root_link_ang_vel_b、高斯奖励 exp(-error/std²)
-  # 索引: docs/HOMEWORK_TODO.md
-  # ==============================================================================
-  raise NotImplementedError("TODO 8: 实现 z_error、xy_error 与 ang_vel_error")
-  # --- 实现提示 ---
-  # - actual 为 body frame 角速度（root_link_ang_vel_b）
-  # - z 轴：跟踪 command[:, 2]（yaw 角速度）；xy：惩罚 roll/pitch 角速度接近 0
-  # - 合成误差后返回 exp(-error / std**2)
+  # 【作业 TODO 8/10 已完成】Task：跟踪 yaw 角速度，同时抑制 roll/pitch 摆动。
+  z_error = torch.square(command[:, 2] - actual[:, 2])
+  xy_error = torch.sum(torch.square(actual[:, :2]), dim=1)
+  ang_vel_error = z_error + xy_error
+  return torch.exp(-ang_vel_error / std**2)
   # <<< HOMEWORK_TODO_8_END
 
 

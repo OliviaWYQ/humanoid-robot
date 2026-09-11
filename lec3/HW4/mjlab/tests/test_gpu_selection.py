@@ -3,6 +3,7 @@
 import os
 
 import pytest
+import torch
 
 from mjlab.utils.gpu import select_gpus
 
@@ -113,6 +114,22 @@ def test_select_gpus_cpu_mode_empty_cuda_visible_devices():
   selected, num = select_gpus([0])
   assert selected is None
   assert num == 0
+
+
+@pytest.mark.parametrize("gpu_ids", [[0], "all"])
+def test_select_gpus_cpu_when_no_cuda_hardware(monkeypatch, gpu_ids):
+  """Default training works on CPU-only hosts without a CUDA environment var."""
+  monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+  monkeypatch.setattr(torch.cuda, "device_count", lambda: 0)
+  assert select_gpus(gpu_ids) == (None, 0)
+
+
+def test_select_gpus_detected_hardware_still_uses_requested_index(monkeypatch):
+  monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+  monkeypatch.setattr(torch.cuda, "device_count", lambda: 2)
+  assert select_gpus([1]) == ([1], 1)
+  with pytest.raises(IndexError):
+    select_gpus([2])
 
 
 def test_select_gpus_mig_uuids():
