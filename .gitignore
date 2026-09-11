@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 *.zip
+.DS_STORE
+.workbuddy/.DS_STORE
+.workbuddy/
+logs/
