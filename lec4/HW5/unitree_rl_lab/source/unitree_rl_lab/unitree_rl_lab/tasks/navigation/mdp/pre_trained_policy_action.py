@@ -48,7 +48,20 @@ class PreTrainedPolicyAction(ActionTerm):
         # 3. 将 last_action（或兼容名称 actions）绑定到上一次低层关节动作。
         # 4. 最后创建只含 ll_policy 组的 ObservationManager。
         # >>> HOMEWORK_TODO_3_START
-        raise NotImplementedError("HOMEWORK_TODO_3: 加载冻结低层策略并连接低层观测")
+        self._policy = torch.jit.load(read_file(cfg.policy_path), map_location=self.device)
+        self._policy.eval()
+        for parameter in self._policy.parameters():
+            parameter.requires_grad_(False)
+        cfg.low_level_observations.velocity_commands.func = lambda env: self._processed_actions
+        cfg.low_level_observations.velocity_commands.params = {}
+        for name in ("last_action", "actions"):
+            term = getattr(cfg.low_level_observations, name, None)
+            if term is not None:
+                term.func = lambda env: last_low_level_action()
+                term.params = {}
+        self._low_level_obs_manager = ObservationManager(
+            {"ll_policy": cfg.low_level_observations}, env
+        )
         # <<< HOMEWORK_TODO_3_END
 
         self._clip_lower = torch.tensor([limit[0] for limit in cfg.velocity_clip], device=self.device)
@@ -80,14 +93,21 @@ class PreTrainedPolicyAction(ActionTerm):
     def process_actions(self, actions: torch.Tensor):
         # 提示：保留原始动作供日志与调试使用；真正传给低层策略的动作须逐维裁剪。
         # >>> HOMEWORK_TODO_4_START
-        raise NotImplementedError("HOMEWORK_TODO_4: 保存并裁剪高层速度动作")
+        self._raw_actions[:] = actions
+        self._processed_actions[:] = torch.clamp(actions, min=self._clip_lower, max=self._clip_upper)
         # <<< HOMEWORK_TODO_4_END
 
     def apply_actions(self):
         # 提示：低层策略只在 low_level_decimation 到达时更新一次，其输出在中间物理步保持。
         # 推理必须放在 torch.inference_mode() 中；低层 action term 每个物理步都要 apply_actions。
         # >>> HOMEWORK_TODO_5_START
-        raise NotImplementedError("HOMEWORK_TODO_5: 实现高低层不同频率的动作执行循环")
+        if self._counter % self.cfg.low_level_decimation == 0:
+            observations = self._low_level_obs_manager.compute_group("ll_policy")
+            with torch.inference_mode():
+                self.low_level_actions[:] = self._policy(observations)
+            self._low_level_action_term.process_actions(self.low_level_actions)
+        self._low_level_action_term.apply_actions()
+        self._counter = (self._counter + 1) % self.cfg.low_level_decimation
         # <<< HOMEWORK_TODO_5_END
 
     def _set_debug_vis_impl(self, debug_vis: bool):

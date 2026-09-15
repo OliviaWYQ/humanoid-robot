@@ -16,7 +16,7 @@ def last_high_level_command(env: ManagerBasedRLEnv, action_name: str = "pre_trai
     # 提示：高层策略需要观察真正传给低层策略的速度指令，而不是裁剪前的原始动作。
     # 可通过 action_manager 按名称取得 action term，并读取其 processed_actions。
     # >>> HOMEWORK_TODO_1_START
-    raise NotImplementedError("HOMEWORK_TODO_1: 返回裁剪后的上一条高层速度指令")
+    return env.action_manager.get_term(action_name).processed_actions
     # <<< HOMEWORK_TODO_1_END
 
 
@@ -51,5 +51,8 @@ def height_scan_pooled(
     # 提示：先调用 _height_scan 得到扁平射线高度，再依据 (ny, nx) 恢复二维网格。
     # 为适配 F.max_pool2d，需要添加通道维；池化后再展平为 (num_envs, -1)。
     # >>> HOMEWORK_TODO_2_START
-    raise NotImplementedError("HOMEWORK_TODO_2: 实现二维高度扫描的最大池化与展平")
+    heights = _height_scan(env, sensor_cfg=sensor_cfg, offset=offset)
+    ny, nx = _height_scan_grid_shape(env, sensor_cfg)
+    grid = heights.reshape(heights.shape[0], 1, ny, nx)
+    return F.max_pool2d(grid, kernel_size=pool_size, stride=pool_size).flatten(start_dim=1)
     # <<< HOMEWORK_TODO_2_END

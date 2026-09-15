@@ -74,16 +74,6 @@ V5_HEIGHT_SCAN_SIZE = (5.0, 3.0)
 V5_HEIGHT_SCAN_RESOLUTION = 0.12
 
 
-def _raise_homework_todo_6(*args, **kwargs):
-    """Defer TODO 6 failure until an environment computes low-level observations."""
-    raise NotImplementedError("HOMEWORK_TODO_6: 构造与预训练策略训练时一致的低层推理观测")
-
-
-def _raise_homework_todo_7(*args, **kwargs):
-    """Defer TODO 7 failure until an environment computes planner observations."""
-    raise NotImplementedError("HOMEWORK_TODO_7: 设计高层导航策略的观测空间")
-
-
 def make_cylinder_obstacle_collection(
     max_obstacles: int = V3_MAX_CYLINDER_OBSTACLES,
     cylinder_radius: float = V3_CYLINDER_RADIUS,
@@ -113,7 +103,11 @@ def make_low_level_inference_observations() -> LowLevelObservationsCfg.PolicyCfg
     # 推理时关闭 corruption 和四个本体感知项的 noise，并保留训练时的 5 帧历史。
     # >>> HOMEWORK_TODO_6_START
     observations = copy.deepcopy(LOW_LEVEL_ENV_CFG.observations.policy)
-    observations.base_ang_vel.func = _raise_homework_todo_6
+    observations.enable_corruption = False
+    observations.concatenate_terms = True
+    observations.history_length = 5
+    for name in ("base_ang_vel", "projected_gravity", "joint_pos_rel", "joint_vel_rel"):
+        getattr(observations, name).noise = None
     return observations
     # <<< HOMEWORK_TODO_6_END
 
@@ -548,7 +542,14 @@ class NavigationObservationsCfg:
         # 参考基线包含：机体线/角速度、投影重力、目标命令、上一高层命令、高度扫描、
         # 关节位置/速度，以及冻结低层策略输出的上一关节动作。
         # >>> HOMEWORK_TODO_7_START
-        homework_todo = ObsTerm(func=_raise_homework_todo_7)
+        base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
+        base_ang_vel = ObsTerm(func=mdp.base_ang_vel, scale=0.2)
+        pose_command = ObsTerm(func=mdp.generated_commands, params={"command_name": "pose_command"})
+        last_cmd = ObsTerm(func=mdp.last_high_level_command)
+        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel, scale=0.05)
+        low_level_last_action = ObsTerm(func=mdp.low_level_last_action)
         # <<< HOMEWORK_TODO_7_END
 
         def __post_init__(self):
