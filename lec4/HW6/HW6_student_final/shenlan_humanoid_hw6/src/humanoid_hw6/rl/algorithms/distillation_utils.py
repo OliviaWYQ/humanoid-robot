@@ -20,8 +20,11 @@ def linear_anneal(start: float, end: float, step: int, duration: int) -> float:
   # 提示：否则计算 progress = step / duration，并 clamp 到 [0, 1]。
   # 提示：返回 start + (end - start) * progress。
   #
-  # 验证：tests/test_instructor_solutions.py::test_linear_anneal_matches_reference
-  raise NotImplementedError("Implement linear distillation-coefficient annealing.")
+  # 验证：tests/test_distillation_math.py::test_schedule_boundaries
+  if duration <= 0:
+    return float(end)
+  progress = min(max(step / duration, 0.0), 1.0)
+  return float(start + (end - start) * progress)
   # <<< HOMEWORK_TODO_1_END
 
 
@@ -39,8 +42,12 @@ def action_regression_loss(
   # 提示：loss_type == "huber" 时使用 F.huber_loss。
   # 提示：返回标量 tensor。
   #
-  # 验证：tests/test_instructor_solutions.py::test_action_regression_loss_matches_reference
-  raise NotImplementedError("Implement action regression loss.")
+  # 验证：tests/test_distillation_math.py::test_huber_and_invalid_loss
+  if loss_type == "mse":
+    return F.mse_loss(student_actions, teacher_actions)
+  if loss_type == "huber":
+    return F.huber_loss(student_actions, teacher_actions)
+  raise ValueError(f"Unsupported action regression loss: {loss_type!r}")
   # <<< HOMEWORK_TODO_2_END
 
 
@@ -58,8 +65,13 @@ def action_matching_metrics(
   # 提示：mae = |student - teacher| 的均值。
   # 提示：rmse = sqrt(mean((student - teacher)^2))。
   #
-  # 验证：tests/test_instructor_solutions.py::test_action_matching_metrics_match_reference
-  raise NotImplementedError("Implement action matching diagnostics.")
+  # 验证：tests/test_distillation_math.py::test_diagnostics_numeric_values
+  with torch.no_grad():
+    error = student_actions - teacher_actions
+    return {
+      "action_mae": error.abs().mean().item(),
+      "action_rmse": error.square().mean().sqrt().item(),
+    }
   # <<< HOMEWORK_TODO_3_END
 
 
@@ -82,8 +94,16 @@ def diagonal_gaussian_kl(
   # 提示：对最后一维求和，再对 batch 取 mean，返回标量 tensor。
   # 提示：这是 distillation KL，不是 PPO 的 desired_kl 学习率控制器。
   #
-  # 验证：tests/test_instructor_solutions.py::test_diagonal_gaussian_kl_matches_reference
-  raise NotImplementedError("Implement diagonal Gaussian KL(teacher || student).")
+  # 验证：tests/test_distillation_math.py::test_kl_matches_torch_distribution_and_gradients
+  teacher_std = teacher_std.clamp_min(std_eps)
+  student_std = student_std.clamp_min(std_eps)
+  kl = (
+    torch.log(student_std / teacher_std)
+    + (teacher_std.square() + (teacher_mean - student_mean).square())
+    / (2.0 * student_std.square())
+    - 0.5
+  )
+  return kl.sum(dim=-1).mean()
   # <<< HOMEWORK_TODO_4_END
 
 
@@ -103,6 +123,10 @@ def gaussian_matching_metrics(
   # 提示：mean_rmse = sqrt(mean((student_mean - teacher_mean)^2))。
   # 提示：std_rmse = sqrt(mean((student_std - teacher_std)^2))。
   #
-  # 验证：tests/test_instructor_solutions.py::test_gaussian_matching_metrics_match_reference
-  raise NotImplementedError("Implement Gaussian matching diagnostics.")
+  # 验证：tests/test_distillation_math.py::test_diagnostics_numeric_values
+  with torch.no_grad():
+    return {
+      "mean_rmse": (student_mean - teacher_mean).square().mean().sqrt().item(),
+      "std_rmse": (student_std - teacher_std).square().mean().sqrt().item(),
+    }
   # <<< HOMEWORK_TODO_5_END

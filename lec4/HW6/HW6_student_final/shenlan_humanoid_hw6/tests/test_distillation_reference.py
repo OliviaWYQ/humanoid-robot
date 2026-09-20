@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import importlib
-import sys
-from pathlib import Path
 from types import SimpleNamespace
 
 import torch
 
 
 def _load_reference(module_path: str):
-  repo_root = Path(__file__).resolve().parents[1]
-  sys.path.insert(0, str(repo_root / "instructor_solutions"))
-  return importlib.import_module(module_path)
+  # The student archive does not contain instructor_solutions. Test the submitted code.
+  return importlib.import_module(f"humanoid_hw6.{module_path}")
 
 
 def test_distillation_utils_reference() -> None:
@@ -70,7 +67,9 @@ def test_action_matching_reference_output() -> None:
     bc_loss_type="mse",
     actor=_Actor(),
   )
-  output = reference.compute_action_matching_output(alg, SimpleNamespace(observations={}))
+  output = reference.ActionMatchingPPO._compute_distillation_output(
+    alg, SimpleNamespace(observations={})
+  )
   assert torch.allclose(output.loss, torch.tensor(1.0))
   assert abs(output.metrics["action_mae"] - 1.0) < 1e-6
 
@@ -90,6 +89,8 @@ def test_kl_matching_reference_output() -> None:
     num_kl_updates=5,
     actor=actor,
   )
-  output = reference.compute_kl_matching_output(alg, SimpleNamespace(observations={}))
+  output = reference.KlMatchingPPO._compute_distillation_output(
+    alg, SimpleNamespace(observations={})
+  )
   assert torch.allclose(output.loss, torch.tensor(0.0), atol=1e-6)
-  assert abs(reference.current_kl_coef(alg) - 0.125) < 1e-6
+  assert abs(reference.KlMatchingPPO._current_distillation_coef(alg) - 0.125) < 1e-6

@@ -6,7 +6,17 @@
 
 from __future__ import annotations
 
-from humanoid_hw6.rl.algorithms.distillation_ppo import DistillationOutput, DistillationPPO
+import torch
+
+from humanoid_hw6.rl.algorithms.distillation_ppo import (
+  DistillationOutput,
+  DistillationPPO,
+)
+from humanoid_hw6.rl.algorithms.distillation_utils import (
+  action_matching_metrics,
+  action_regression_loss,
+  linear_anneal,
+)
 
 
 class ActionMatchingPPO(DistillationPPO):
@@ -39,7 +49,9 @@ class ActionMatchingPPO(DistillationPPO):
     # 提示：调用 distillation_utils.linear_anneal(...)。
     # 提示：step 使用 self.num_bc_updates。
     # 提示：duration 使用 self.bc_anneal_iters。
-    raise NotImplementedError("Implement action-matching coefficient schedule.")
+    return linear_anneal(
+      self.bc_coef_start, self.bc_coef_end, self.num_bc_updates, self.bc_anneal_iters
+    )
     # <<< HOMEWORK_TODO_6A_END
 
   def _compute_distillation_output(self, batch) -> DistillationOutput:
@@ -55,8 +67,14 @@ class ActionMatchingPPO(DistillationPPO):
     # 提示：teacher 不参与梯度。
     # 提示：不要修改 distillation_ppo.py。
     #
-    # 验证：tests/test_instructor_solutions.py::test_action_matching_integration_matches_reference
-    raise NotImplementedError("Implement action-matching distillation output.")
+    # 验证：tests/test_distillation_math.py::test_integration_updates_student_only
+    with torch.no_grad():
+      teacher_actions = self.actor.teacher_forward(batch.observations)
+    student_actions = self.actor(batch.observations)
+    return DistillationOutput(
+      loss=action_regression_loss(student_actions, teacher_actions, self.bc_loss_type),
+      metrics=action_matching_metrics(student_actions, teacher_actions),
+    )
     # <<< HOMEWORK_TODO_6B_END
 
   def _format_distillation_metrics(self, mean_distill_loss: float) -> dict[str, float]:

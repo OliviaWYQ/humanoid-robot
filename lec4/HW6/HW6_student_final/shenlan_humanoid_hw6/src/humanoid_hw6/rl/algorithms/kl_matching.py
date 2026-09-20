@@ -6,7 +6,17 @@
 
 from __future__ import annotations
 
-from humanoid_hw6.rl.algorithms.distillation_ppo import DistillationOutput, DistillationPPO
+import torch
+
+from humanoid_hw6.rl.algorithms.distillation_ppo import (
+  DistillationOutput,
+  DistillationPPO,
+)
+from humanoid_hw6.rl.algorithms.distillation_utils import (
+  diagonal_gaussian_kl,
+  gaussian_matching_metrics,
+  linear_anneal,
+)
 
 
 class KlMatchingPPO(DistillationPPO):
@@ -37,7 +47,12 @@ class KlMatchingPPO(DistillationPPO):
     # 提示：调用 distillation_utils.linear_anneal(...)。
     # 提示：step 使用 self.num_kl_updates。
     # 提示：duration 使用 self.kl_coef_anneal_iters。
-    raise NotImplementedError("Implement KL-matching coefficient schedule.")
+    return linear_anneal(
+      self.kl_coef_start,
+      self.kl_coef_min,
+      self.num_kl_updates,
+      self.kl_coef_anneal_iters,
+    )
     # <<< HOMEWORK_TODO_7A_END
 
   def _compute_distillation_output(self, batch) -> DistillationOutput:
@@ -55,8 +70,18 @@ class KlMatchingPPO(DistillationPPO):
     # 提示：此 KL 与 PPO 的 desired_kl 无关。
     # 提示：不要修改 distillation_ppo.py。
     #
-    # 验证：tests/test_instructor_solutions.py::test_kl_matching_integration_matches_reference
-    raise NotImplementedError("Implement KL-matching distillation output.")
+    # 验证：tests/test_distillation_math.py::test_integration_updates_student_only
+    with torch.no_grad():
+      teacher_mean, teacher_std = self.actor.teacher_distribution_params(
+        batch.observations
+      )
+    student_mean, student_std = self.actor.output_distribution_params
+    return DistillationOutput(
+      loss=diagonal_gaussian_kl(teacher_mean, teacher_std, student_mean, student_std),
+      metrics=gaussian_matching_metrics(
+        teacher_mean, teacher_std, student_mean, student_std
+      ),
+    )
     # <<< HOMEWORK_TODO_7B_END
 
   def _format_distillation_metrics(self, mean_distill_loss: float) -> dict[str, float]:
