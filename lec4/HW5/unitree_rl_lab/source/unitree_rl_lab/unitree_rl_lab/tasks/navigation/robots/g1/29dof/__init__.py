@@ -21,3 +21,14 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{__name__}.agents.rsl_rl_ppo_cfg:NavigationV5CompactSingleGoalPPORunnerCfg",
     },
 )
+
+gym.register(
+    id="Unitree-G1-29dof-Navigation-HRL-RandomDense",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.navigation_env_cfg:NavigationV5RandomDenseEnvCfg",
+        "play_env_cfg_entry_point": f"{__name__}.navigation_env_cfg:NavigationV5RandomDenseEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{__name__}.agents.rsl_rl_ppo_cfg:NavigationV5RandomDensePPORunnerCfg",
+    },
+)

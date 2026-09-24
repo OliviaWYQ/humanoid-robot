@@ -106,14 +106,24 @@ import isaaclab_tasks  # noqa: F401
 from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
 from isaaclab.utils.assets import retrieve_file_path
 from isaaclab.utils.dict import print_dict
-from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
+
+try:
+    from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
+except ImportError:  # older IsaacLab releases do not ship this helper
+    def get_published_pretrained_checkpoint(library, task):
+        return None
 from isaaclab_rl.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
     RslRlVecEnvWrapper,
     export_policy_as_jit,
     export_policy_as_onnx,
-    handle_deprecated_rsl_rl_cfg,
 )
+
+try:
+    from isaaclab_rl.rsl_rl import handle_deprecated_rsl_rl_cfg
+except ImportError:  # older IsaacLab releases do not ship this helper (not needed for rsl-rl 3.x)
+    def handle_deprecated_rsl_rl_cfg(agent_cfg, installed_version):
+        return agent_cfg
 from isaaclab_tasks.utils import get_checkpoint_path
 
 import unitree_rl_lab.tasks  # noqa: F401

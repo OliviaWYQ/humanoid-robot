@@ -2,6 +2,14 @@
 
 export UNITREE_RL_LAB_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
+# NOTE (known environment issue): with the navigation tasks at 1024 envs (~123k kinematic
+# obstacle bodies), Isaac Sim 5.1 / PhysX 107.3 intermittently deadlocks with PhysX's
+# convexCoreTrimeshNphase_Kernel32 spinning on the GPU (scheduling-dependent PhysX bug,
+# not a data/NaN issue; 512 envs is stable). Launching with CUDA_LAUNCH_BLOCKING=1 in the
+# shell environment lowers the hang probability but does NOT eliminate it and costs
+# ~20% steps/s, so it is left as an opt-in:
+#   CUDA_LAUNCH_BLOCKING=1 ./unitree_rl_lab.sh -t --task Unitree-G1-29dof-Navigation-HRL-Baseline --num_envs 1024
+
 if ! [[ -z "${CONDA_PREFIX}" ]]; then
     python_exe=${CONDA_PREFIX}/bin/python
 else

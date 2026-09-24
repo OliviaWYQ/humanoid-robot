@@ -15,8 +15,10 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
-from isaaclab.sensors.ray_caster import MultiMeshRayCasterCfg, patterns
+from isaaclab.sensors.ray_caster import patterns
 from isaaclab.utils import configclass
+
+from unitree_rl_lab._vendor.multi_mesh_ray_caster import MultiMeshRayCasterCfg
 
 from unitree_rl_lab.tasks.navigation import mdp
 
@@ -70,6 +72,10 @@ V4_OBSTACLE_COUNT_LEVELS = (0, 45, 65, 81, 120)
 
 V5_MAX_MIXED_OBSTACLES = 120
 V5_OBSTACLE_COUNT_LEVELS = (0, 50, 80, 100, 120)
+# Part 2 (Direction B): our own success-based obstacle-count schedule for the
+# reset-time random-layout task. Ends at the same 120 obstacles as V5, but with
+# coarser early steps so more training budget is spent at high density.
+V5R_DENSE_LEVELS = (0, 40, 80, 120)
 V5_HEIGHT_SCAN_SIZE = (5.0, 3.0)
 V5_HEIGHT_SCAN_RESOLUTION = 0.12
 
@@ -846,6 +852,89 @@ class NavigationV5MixedObstacleEnvCfg_Compact_SingleGoal(NavigationV5MixedObstac
 
 
 @configclass
+class NavigationV5RandomDenseCurriculumCfg:
+    """Success-based obstacle-count curriculum for reset-time random layouts.
+
+    Promotes an environment to the next level when its last episode ended via the
+    goal_reached termination (no fall); falls demote one level. Uses
+    obstacle_count_term_levels because the single-goal command does not maintain
+    the goals_reached metric (update_goal_on_success=False). Level counts use
+    V5R_DENSE_LEVELS.
+    """
+
+    obstacle_count = CurrTerm(
+        func=mdp.obstacle_count_term_levels,
+        params={"level_counts": V5R_DENSE_LEVELS},
+    )
+
+
+@configclass
+class NavigationV5RandomDenseEventCfg:
+    """Reset events that resample a fresh random mixed-obstacle layout every episode.
+
+    The obstacle distribution (slot types/sizes, arena extent, separation) is the
+    same family as the baseline baked templates; only the generation timing differs:
+    layouts are redrawn at reset instead of baked once at startup.
+    """
+
+    randomize_obstacles = EventTerm(
+        func=mdp.randomize_mixed_obstacle_layout,
+        mode="reset",
+        params={
+            "layout_cfg": mdp.MixedObstacleLayoutCfg(
+                obstacle_asset_name="mixed_obstacles",
+                max_obstacles=V5_MAX_MIXED_OBSTACLES,
+                soft_margin=0.4,
+                min_center_separation=1.1,
+                arena_half_extent=28.0,
+                arena_margin=3.0,
+                max_resample_tries=256,
+                exclude_origin=False,
+            ),
+            "default_num_active": 0,
+        },
+    )
+    reset_base = EventTerm(
+        func=mdp.reset_root_state_obstacle_aware,
+        mode="reset",
+        params={
+            "pose_range": {"x": (-25.0, 25.0), "y": (-25.0, 25.0), "yaw": (-math.pi, math.pi)},
+            "velocity_range": {
+                "x": (0.0, 0.0),
+                "y": (0.0, 0.0),
+                "z": (0.0, 0.0),
+                "roll": (0.0, 0.0),
+                "pitch": (0.0, 0.0),
+                "yaw": (0.0, 0.0),
+            },
+            "robot_radius": 0.5,
+        },
+    )
+    reset_robot_joints = EventTerm(
+        func=mdp.reset_joints_by_scale,
+        mode="reset",
+        params={
+            "position_range": (1.0, 1.0),
+            "velocity_range": (-1.0, 1.0),
+        },
+    )
+
+
+@configclass
+class NavigationV5RandomDenseEnvCfg(NavigationV5MixedObstacleEnvCfg_Compact_SingleGoal):
+    """Part 2 (Direction B): baseline compact single-goal task with reset-time
+    random mixed-obstacle layouts and a success-based obstacle-count curriculum.
+
+    Everything else (observations, commands, rewards, terminations, action
+    bridge, decimation) is inherited unchanged from the HRL-Baseline config so
+    that the obstacle generation mechanism is the only experimental variable.
+    """
+
+    events: NavigationV5RandomDenseEventCfg = NavigationV5RandomDenseEventCfg()
+    curriculum: NavigationV5RandomDenseCurriculumCfg = NavigationV5RandomDenseCurriculumCfg()
+
+
+@configclass
 class NavigationV5MixedObstacleEnvCfg_PLAY(NavigationV5MixedObstacleEnvCfg):
     viewer: ViewerCfg = ViewerCfg(
         eye=(-3.5, 0.0, 2.0),
@@ -930,6 +1019,46 @@ class NavigationV5MixedObstacleEnvCfg_Compact_SingleGoal_PLAY(
         self.observations.policy.enable_corruption = False
         self.observations.critic.enable_corruption = False
         self.curriculum = None
+        if self.scene.height_scanner is not None:
+            self.scene.height_scanner.debug_vis = True
+        self.commands.pose_command.debug_vis = True
+        # Shrink training-sized fixed PhysX GPU buffers for few-env PLAY with video.
+        self.sim.physx.gpu_found_lost_pairs_capacity = 2**20
+        self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 2**22
+        self.sim.physx.gpu_max_rigid_contact_count = 2**20
+
+
+@configclass
+class NavigationV5RandomDenseEnvCfg_PLAY(NavigationV5RandomDenseEnvCfg):
+    """PLAY variant of the random-layout task: top-down camera, full 120-obstacle
+    layouts at every reset (curriculum disabled) for qualitative evaluation."""
+
+    viewer: ViewerCfg = ViewerCfg(
+        eye=(0.0, 0.0, 10.0),
+        lookat=(0.0, 0.0, 0.0),
+        resolution=(1280, 720),
+        origin_type="asset_root",
+        env_index=0,
+        asset_name="robot",
+        body_name=None,
+    )
+
+    def __post_init__(self):
+        NavigationV5RandomDenseEnvCfg.__post_init__(self)
+        self.scene.num_envs = 16
+        self.scene.env_spacing = 60.0
+        if self.scene.terrain.terrain_generator is not None:
+            self.scene.terrain.terrain_generator.num_rows = 1
+            self.scene.terrain.terrain_generator.num_cols = 1
+        self.observations.policy.enable_corruption = False
+        self.observations.critic.enable_corruption = False
+        self.curriculum = None
+        self.events.randomize_obstacles.params["default_num_active"] = V5_MAX_MIXED_OBSTACLES
+        # Few parallel envs in PLAY: shrink the fixed-size PhysX GPU buffers that
+        # V5 sizes for 4096-env training, so video rendering fits on 12 GB GPUs.
+        self.sim.physx.gpu_found_lost_pairs_capacity = 2**20
+        self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 2**22
+        self.sim.physx.gpu_max_rigid_contact_count = 2**20
         if self.scene.height_scanner is not None:
             self.scene.height_scanner.debug_vis = True
         self.commands.pose_command.debug_vis = True

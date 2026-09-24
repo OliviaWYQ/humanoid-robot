@@ -102,7 +102,7 @@ class PreTrainedPolicyAction(ActionTerm):
         # 推理必须放在 torch.inference_mode() 中；低层 action term 每个物理步都要 apply_actions。
         # >>> HOMEWORK_TODO_5_START
         if self._counter % self.cfg.low_level_decimation == 0:
-            observations = self._low_level_obs_manager.compute_group("ll_policy")
+            observations = self._low_level_obs_manager.compute_group("ll_policy", update_history=True)
             with torch.inference_mode():
                 self.low_level_actions[:] = self._policy(observations)
             self._low_level_action_term.process_actions(self.low_level_actions)

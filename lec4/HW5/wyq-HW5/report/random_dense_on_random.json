@@ -1,0 +1,19 @@
+{
+  "task": "Unitree-G1-29dof-Navigation-HRL-RandomDense",
+  "checkpoint": "logs/rsl_rl/unitree_g1_29dof_navigation_hrl_random_dense/2026-09-17_21-37-58/model_9999.pt",
+  "seed": 42,
+  "num_envs": 64,
+  "episodes_per_env": 4,
+  "episodes_completed": 256,
+  "success_rate": 0.97265625,
+  "fall_rate": 0.01171875,
+  "timeout_rate": 0.015625,
+  "mean_episode_length_s": 9.028906249999999,
+  "mean_final_goal_error_m": 0.5008506095036864,
+  "outcome_counts": {
+    "goal_reached": 249,
+    "base_height": 0,
+    "bad_orientation": 3,
+    "time_out": 4
+  }
+}

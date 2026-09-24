@@ -9,7 +9,30 @@
 Linux 复用原有 `env_isaaclab`、Isaac Lab 和 Unitree 模型资产即可。
 
 本次完成 Part 1 的 7 个 TODO（3 个源文件），保留所有 START/END 标记。
-未修改低层训练任务、权重、训练/play 入口；尚未进行训练或 Part 2 开放实验。
+未修改低层训练任务、权重、训练/play 入口；尚未进行 Part 2 开放实验。
+
+## Linux 复现记录（2026-09-15）
+
+已在 Linux（RTX 4070 / Isaac Sim 5.1 / 本机 IsaacLab 2.3.1）完成接续验证：
+
+- `UNITREE_MODEL_DIR` 改为可用环境变量覆盖，默认 `/home/star/projects/unitree_model`。
+- `rsl-rl-lib` 需 >= 3.1（本机升到 3.3.0）：`training_logger.py` 依赖
+  `rsl_rl.utils.logger.Logger`，3.0.1 没有该模块。
+- `scripts/rsl_rl/train.py` 对 `handle_deprecated_rsl_rl_cfg` 的导入加了
+  try/except（旧版 IsaacLab 没有该函数，rsl-rl 3.x 不需要）。
+- 本机 IsaacLab 2.3.1 没有 `MultiMeshRayCaster`（仅 IsaacLab main 提供），
+  已将 main 的实现 vendored 到 `unitree_rl_lab/_vendor/multi_mesh_ray_caster/`，
+  未改动共享的 IsaacLab 安装。
+- **训练修复（TODO-5）**：`pre_trained_policy_action.py` 的 `apply_actions` 中
+  `compute_group("ll_policy")` 必须传 `update_history=True`。否则低层策略的
+  5 帧历史恒为"当前帧×5"（分布外输入），last_action 反馈环路逐步发散，
+  产生 1e4~1e7 垃圾动作/观测，导致机器人摔倒、critic 值爆炸（1e5+），
+  512+ envs 时训练必崩（value loss 天文数字、action std NaN），
+  1024 envs 时 PhysX 设备端挂死。修复后 1024 envs 训练正常
+  （value loss ~0.5，reward 由 -93 升至 +9，~2.5s/iter）。
+- smoke（`--num_envs 16 --max_iterations 1`）通过；Baseline 正式训练
+  （`--num_envs 1024`，30000 iterations）已启动，日志见
+  `logs/rsl_rl/unitree_g1_29dof_navigation_hrl_baseline/`。
 
 ## 本地 CPU smoke
 

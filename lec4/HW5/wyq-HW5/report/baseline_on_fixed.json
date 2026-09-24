@@ -1,0 +1,19 @@
+{
+  "task": "Unitree-G1-29dof-Navigation-HRL-Baseline",
+  "checkpoint": "logs/rsl_rl/unitree_g1_29dof_navigation_hrl_baseline/2026-09-17_16-27-10/model_9999.pt",
+  "seed": 42,
+  "num_envs": 64,
+  "episodes_per_env": 4,
+  "episodes_completed": 258,
+  "success_rate": 0.9922480620155039,
+  "fall_rate": 0.0,
+  "timeout_rate": 0.007751937984496124,
+  "mean_episode_length_s": 8.61705426356589,
+  "mean_final_goal_error_m": 0.42497889316359233,
+  "outcome_counts": {
+    "goal_reached": 256,
+    "base_height": 0,
+    "bad_orientation": 0,
+    "time_out": 2
+  }
+}

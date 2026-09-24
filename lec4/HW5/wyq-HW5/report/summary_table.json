@@ -1,0 +1,38 @@
+{
+  "protocol": "deterministic policy, seed 42, 64 envs x 4 episodes, full-120-obstacle layouts for RandomDense eval, baked templates for Baseline eval",
+  "budget": "both trained 512 envs x 10000 iters x 8 steps/iter (41M env steps), seed 42",
+  "rows": {
+    "Baseline policy (trained on 3 fixed maps)": {
+      "fixed maps": {
+        "success_rate": 0.9922,
+        "fall_rate": 0.0,
+        "timeout_rate": 0.0078,
+        "mean_episode_length_s": 8.6171,
+        "mean_final_goal_error_m": 0.425
+      },
+      "random 120-obstacle layouts": {
+        "success_rate": 0.9883,
+        "fall_rate": 0.0,
+        "timeout_rate": 0.0117,
+        "mean_episode_length_s": 8.493,
+        "mean_final_goal_error_m": 0.4236
+      }
+    },
+    "RandomDense policy (trained on reset-time random layouts)": {
+      "fixed maps": {
+        "success_rate": 0.9922,
+        "fall_rate": 0.0,
+        "timeout_rate": 0.0078,
+        "mean_episode_length_s": 9.225,
+        "mean_final_goal_error_m": 0.4328
+      },
+      "random 120-obstacle layouts": {
+        "success_rate": 0.9727,
+        "fall_rate": 0.0117,
+        "timeout_rate": 0.0156,
+        "mean_episode_length_s": 9.0289,
+        "mean_final_goal_error_m": 0.5009
+      }
+    }
+  }
+}

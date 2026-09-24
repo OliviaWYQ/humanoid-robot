@@ -43,3 +43,8 @@ class NavigationV5MixedObstaclePPORunnerCfg(RslRlOnPolicyRunnerCfg):
 @configclass
 class NavigationV5CompactSingleGoalPPORunnerCfg(NavigationV5MixedObstaclePPORunnerCfg):
     experiment_name = "unitree_g1_29dof_navigation_hrl_baseline"
+
+
+@configclass
+class NavigationV5RandomDensePPORunnerCfg(NavigationV5CompactSingleGoalPPORunnerCfg):
+    experiment_name = "unitree_g1_29dof_navigation_hrl_random_dense"

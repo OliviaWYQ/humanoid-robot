@@ -15,7 +15,7 @@ from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.utils import configclass
 
-UNITREE_MODEL_DIR = "/home/sustech/桌面/unitree_locomotion_cb/unitree_model"
+UNITREE_MODEL_DIR = os.environ.get("UNITREE_MODEL_DIR", "/home/star/projects/unitree_model")
 UNITREE_ROS_DIR = "path/to/unitree_ros"  # Replace with the actual path to your unitree_ros package
 
 
