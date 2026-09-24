@@ -8,3 +8,4 @@ logs/
 # 大体积数据集：SMPL-X 人体模型 (1.5GB, 单文件超 GitHub 100MB 限制) 与 AMASS 动作数据 (1GB)
 lec5/HW7/SMPL-X人体模型模型文件/
 lec5/HW7/AMASS ACCAD 数据集/
+*.pt
