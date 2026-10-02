@@ -9,3 +9,16 @@ logs/
 lec5/HW7/SMPL-X人体模型模型文件/
 lec5/HW7/AMASS ACCAD 数据集/
 *.pt
+# lec7/HW10 HOI_Mimic：IDE 缓存与第三方预编译库（体积过大，不入库）
+lec7/HW10/HOI_Mimic/.vscode/browse.vc.db*
+lec7/HW10/HOI_Mimic/deploy/thirdparty/
+# lec7/HW10 HOI_Mimic：vendor 机器人资产仓库（含 meshes/usd，约 1.5GB）
+lec7/HW10/HOI_Mimic/source/unitree_rl_lab/unitree_rl_lab/assets/robots/unitree_ros/
+lec7/HW10/HOI_Mimic/source/unitree_rl_lab/unitree_rl_lab/assets/robots/unitree_model/
+# lec7/HW10：导出的策略模型（二进制）
+lec7/HW10/HOI_Mimic/deploy/robots/**/exported/
+# lec7/HW11：网格与策略/参考数据等大体积二进制资产（本地保留，不入库）
+lec7/HW11/sim2sim/**/*.STL
+lec7/HW11/sim2sim/policy/*.onnx
+lec7/HW11/data&model/**/exported/
+lec7/HW11/data&model/**/*.npz
