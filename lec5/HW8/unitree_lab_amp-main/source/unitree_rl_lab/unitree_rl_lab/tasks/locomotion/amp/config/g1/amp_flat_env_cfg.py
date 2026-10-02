@@ -58,16 +58,23 @@ def key_link_positions_in_base(
 class AMPObservationsCfg(VelocityObservationsCfg):
     @configclass
     class AMPCfg(ObsGroup):
-        # TODO: 补全 AMP observation 的各个观测项。
-        # 需要构造 x_amp in R^{B x H x d_amp} 中的单帧特征，例如：
-        # base_lin_vel、base_ang_vel、projected_gravity、base_height、
-        # joint_pos、joint_vel、key_links_pos_b。
-        # 提示：可使用 ObsTerm(func=mdp.xxx)，关键连杆位置使用 key_link_positions_in_base。
+        # Same order as motion_dataset.DEFAULT_FEATURES; joints use asset order.
+        base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
+        base_ang_vel = ObsTerm(func=mdp.base_ang_vel)
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
+        base_height = ObsTerm(func=mdp.base_pos_z)
+        joint_pos = ObsTerm(func=mdp.joint_pos)
+        joint_vel = ObsTerm(func=mdp.joint_vel)
+        key_links_pos_b = ObsTerm(
+            func=key_link_positions_in_base,
+            params={"asset_cfg": SceneEntityCfg(
+                "robot", body_names=list(G1_AMP_KEY_LINK_NAMES), preserve_order=True
+            )},
+        )
 
         def __post_init__(self):
-            # TODO: 设置 AMP observation group 的属性。
-            # 提示：AMP observation 不应使用噪声扰动，并且需要将各观测项拼接成一个向量。
             self.enable_corruption = False
+            self.concatenate_terms = True
 
     amp: AMPCfg = AMPCfg()
 
@@ -324,9 +331,17 @@ class G1AMPWalkToRunPlayEnvCfg(G1AMPWalkToRunEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (-0.2, 0.2)
 
 
-# TODO: 补全 G1AMPWalkToRunFullPlayEnvCfg。
-# 要求：继承 G1AMPWalkToRunPlayEnvCfg，关闭课程，设置完整评估命令范围，
-# 例如支持低速走、高速跑和左右转弯。
+@configclass
+class G1AMPWalkToRunFullPlayEnvCfg(G1AMPWalkToRunPlayEnvCfg):
+    """Evaluate the complete training limits without curriculum or pushes."""
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.curriculum.lin_vel_cmd_levels = None
+        self.curriculum.ang_vel_cmd_levels = None
+        self.commands.base_velocity.ranges.lin_vel_x = (-1.0, 4.2)
+        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+        self.commands.base_velocity.ranges.ang_vel_z = (-1.2, 1.2)
 
 
 @configclass

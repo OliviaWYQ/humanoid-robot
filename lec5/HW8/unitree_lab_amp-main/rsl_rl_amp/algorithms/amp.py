@@ -162,11 +162,7 @@ class AMP(PPO):
             ((1.0 - task_weight) * style_rewards).abs().sum()
         )
         self._amp_task_contribution_sum += float((task_weight * rewards).abs().sum())
-        # TODO: 补全总奖励计算。
-        # mixed_rewards = TODO: 调用判别器的奖励混合接口。
-        # 数学形式：r_t = (1 - alpha) r_amp + alpha r_task。
-        # 其中 r_amp 为 AMP 风格奖励，r_task 为环境任务奖励，alpha 为任务奖励权重。
-        raise NotImplementedError("TODO: 计算 AMP 风格奖励与任务奖励的混合总奖励。")
+        mixed_rewards = self.discriminator.mix_rewards(style_rewards, rewards)
         mixed_rewards = torch.where(valid_windows, mixed_rewards, rewards)
         self.last_mixed_rewards = mixed_rewards
         self.last_reward_components = {

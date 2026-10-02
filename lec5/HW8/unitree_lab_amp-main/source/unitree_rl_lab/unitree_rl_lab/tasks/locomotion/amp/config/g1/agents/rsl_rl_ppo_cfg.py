@@ -29,9 +29,7 @@ class G1AMPRunnerCfg(RslRlOnPolicyRunnerCfg):
     save_interval = 500
     experiment_name = "unitree_g1_29dof_amp"
     amp_motion_profile: str = "mixed"
-    # TODO: 补全 RSL-RL 观测分组。
-    # 需要指定 actor、critic 和 AMP 判别器分别读取哪些 observation group。
-    obs_groups = {}
+    obs_groups = {"actor": ["policy"], "critic": ["critic"], "amp": ["amp"]}
 
     policy = RslRlAMPActorCriticCfg(
         init_noise_std=0.8,
@@ -108,9 +106,11 @@ class G1AMPOmniRunRunnerCfg(G1AMPRunnerCfg):
 
 @configclass
 class G1AMPWalkToRunRunnerCfg(G1AMPRunnerCfg):
-    # TODO: 补全走跑任务的 runner 配置。
-    # 需要设置实验名称、专家运动 profile，并调整任务奖励和 AMP 风格奖励的混合权重。
-    pass
+    experiment_name = "unitree_g1_29dof_amp_walk_to_run"
+    amp_motion_profile: str = "walk_to_run"
+
+    def __post_init__(self):
+        self.algorithm.amp_cfg["discriminator"]["task_reward_weight"] = 0.6
 
 
 @configclass

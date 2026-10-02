@@ -85,20 +85,16 @@ class AMPDiscriminator(nn.Module):
         if step_dt <= 0.0:
             raise ValueError(f"step_dt must be positive, got {step_dt}")
         score = self.forward(samples)
-        # TODO: 根据判别器输出计算 AMP 风格奖励。
-        # quality = TODO: 将 score 转换为有界的动作质量。
-        # style_rewards = TODO: 根据动作质量、step_dt 和 reward_scale 计算风格奖励。
-        # 数学形式：r_amp = dt * beta * q(D_psi(x))。
-        # 其中 q(.) 为有界风格质量函数，beta 为奖励缩放系数。
-        raise NotImplementedError("TODO: 计算 AMP 风格奖励。")
+        quality = self.quality_from_score(score)
+        style_rewards = step_dt * self.reward_scale * quality
+        return style_rewards, score
 
     def mix_rewards(self, style_rewards: torch.Tensor, task_rewards: torch.Tensor) -> torch.Tensor:
-        # TODO: 补全奖励混合公式。
-        # task_weight = TODO: 读取任务奖励权重。
-        # mixed_rewards = TODO: 混合 style_rewards 和 task_rewards。
-        # 数学形式：r_t = (1 - alpha) r_amp + alpha r_task。
-        # alpha 越大，策略越偏向速度跟踪等任务目标；alpha 越小，策略越偏向专家动作风格。
-        raise NotImplementedError("TODO: 混合 AMP 风格奖励和任务奖励。")
+        """Mix matching reward tensors without accidental broadcasting."""
+        if style_rewards.shape != task_rewards.shape:
+            raise ValueError("Style and task rewards must have the same shape.")
+        task_weight = self.task_reward_weight
+        return (1.0 - task_weight) * style_rewards + task_weight * task_rewards
 
     def loss(self, policy_samples: torch.Tensor, expert_samples: torch.Tensor) -> dict[str, torch.Tensor]:
         """Compute least-squares classification and an expert R1 penalty."""

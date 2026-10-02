@@ -95,21 +95,19 @@ class G1OmniRunMotionCfg(G1MotionSourceCfg):
 
 @dataclass
 class G1WalkToRunMotionCfg(G1MotionSourceCfg):
-    """Task-agnostic walking, running, transition, reverse, and turning clips."""
+    """Use the four available HW7 clips for walking, running and transitions.
+
+    Add backward and right-turn references here when those clips are available.
+    UNITREE_AMP_WALK_TO_RUN_DIR may point to an equivalent dataset elsewhere.
+    """
 
     profile_name: str = "walk_to_run"
-    motion_dir: str = str(DATA_ROOT / "mixed")
+    motion_dir: str = os.environ.get("UNITREE_AMP_WALK_TO_RUN_DIR", str(DATA_ROOT / "hw7"))
     clip_weights: dict[str, float] = field(default_factory=lambda: {
         "B3_-_walk1_stageii": 4.0,
-        "B5_-_walk_backwards_stageii": 2.0,
         "B9_-_walk_turn_left_(90)_stageii": 1.0,
-        "B12_-_walk_turn_right_(90)_stageii": 1.0,
         "C3_-_Run_stageii": 5.0,
         "C5_-_walk_to_run_stageii": 3.0,
-        "C2_-_Run_to_stand_stageii": 1.0,
-        "C6_-_stand_to_run_backwards_stageii": 1.0,
-        "C11_-__run_turn_left_(90)_stageii": 1.0,
-        "C14_-__run_turn_right__(90)_stageii": 1.0,
     })
 
 
@@ -140,7 +138,22 @@ class G1MixedMotionCfg(G1MotionSourceCfg):
     })
 
 
+@dataclass
+class G1HW7MotionCfg(G1MotionSourceCfg):
+    """Walking, turning, running, and transition clips produced by HW7."""
+
+    profile_name: str = "hw7"
+    motion_dir: str = str(DATA_ROOT / "hw7")
+    clip_weights: dict[str, float] = field(default_factory=lambda: {
+        "B3_-_walk1_stageii": 1.0,
+        "B9_-_walk_turn_left_(90)_stageii": 1.0,
+        "C3_-_Run_stageii": 1.0,
+        "C5_-_walk_to_run_stageii": 1.0,
+    })
+
+
 MOTION_CONFIGS = {
+    "hw7": G1HW7MotionCfg,
     "walk": G1WalkMotionCfg,
     "run": G1RunMotionCfg,
     "omni_run": G1OmniRunMotionCfg,

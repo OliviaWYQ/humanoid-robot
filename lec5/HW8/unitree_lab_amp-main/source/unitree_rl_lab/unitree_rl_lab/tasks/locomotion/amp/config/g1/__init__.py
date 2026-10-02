@@ -44,8 +44,12 @@ G1_AMP_TASKS = (
         "G1AMPWalkToRunPlayEnvCfg",
         "G1AMPWalkToRunRunnerCfg",
     ),
-    # TODO: 注册 WalkToRun-FullPlay 评估任务。
-    # 提示：需要在 amp_flat_env_cfg.py 中先补全 G1AMPWalkToRunFullPlayEnvCfg。
+    (
+        "Unitree-G1-29dof-AMP-WalkToRun-FullPlay",
+        "G1AMPWalkToRunEnvCfg",
+        "G1AMPWalkToRunFullPlayEnvCfg",
+        "G1AMPWalkToRunRunnerCfg",
+    ),
     ("Unitree-G1-29dof-AMP-Dance", "G1AMPDanceEnvCfg", "G1AMPDancePlayEnvCfg", "G1AMPDanceRunnerCfg"),
     ("Unitree-G1-29dof-AMP-Play", "G1AMPPlayEnvCfg", "G1AMPPlayEnvCfg", "G1AMPPlayRunnerCfg"),
     ("AMP-Flat-G1-walk-v0", "G1AMPWalkEnvCfg", "G1AMPWalkPlayEnvCfg", "G1AMPWalkRunnerCfg"),

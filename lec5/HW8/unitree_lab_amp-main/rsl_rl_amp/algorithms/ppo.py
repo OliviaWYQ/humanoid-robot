@@ -275,12 +275,7 @@ class PPO:
             else:
                 value_loss = (batch.returns - values).pow(2).mean()
 
-            # TODO: 补全 PPO 总 loss。
-            # loss = TODO: 组合 surrogate_loss、value_loss 和策略熵。
-            # 数学形式：L = L_policy + c_v L_value - c_e H(pi)。
-            # 其中 L_policy 为 PPO clipped surrogate loss，L_value 为 critic loss，
-            # H(pi) 为策略熵，用于鼓励探索。
-            raise NotImplementedError("TODO: 计算 PPO 的 actor-critic 总 loss。")
+            loss = surrogate_loss + self.value_loss_coef * value_loss - self.entropy_coef * entropy.mean()
 
             # RND loss
             rnd_loss = self.rnd.compute_loss(batch.observations[:original_batch_size]) if self.rnd else None  # type: ignore
