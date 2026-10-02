@@ -1,0 +1,22 @@
+[
+  {
+    "source": "lec5/HW7/submission/input/B3_-_walk1_stageii.npz",
+    "output": "lec5/HW7/submission/output/B3_-_walk1_stageii.npz",
+    "status": "generated"
+  },
+  {
+    "source": "lec5/HW7/submission/input/B9_-_walk_turn_left_(90)_stageii.npz",
+    "output": "lec5/HW7/submission/output/B9_-_walk_turn_left_(90)_stageii.npz",
+    "status": "generated"
+  },
+  {
+    "source": "lec5/HW7/submission/input/C3_-_Run_stageii.npz",
+    "output": "lec5/HW7/submission/output/C3_-_Run_stageii.npz",
+    "status": "generated"
+  },
+  {
+    "source": "lec5/HW7/submission/input/C5_-_walk_to_run_stageii.npz",
+    "output": "lec5/HW7/submission/output/C5_-_walk_to_run_stageii.npz",
+    "status": "generated"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "source": "/Users/mac/Desktop/github/humanoid-robot/lec5/HW7/AMASS ACCAD \u6570\u636e\u96c6/ACCAD/Female1Walking_c3d/B3_-_walk1_stageii.npz",
+    "source_sha256": "1646e25476236e7bc124b27f9d5f5e62e195775c5ac7f2b9fa78aa92a0d03f33",
+    "output": "B3_-_walk1_stageii.npz",
+    "output_sha256": "6820d21195aab093eee88d134a30275fb2f2c4022885993eb8d87ca6c690380f"
+  },
+  {
+    "source": "/Users/mac/Desktop/github/humanoid-robot/lec5/HW7/AMASS ACCAD \u6570\u636e\u96c6/ACCAD/Female1Walking_c3d/B9_-_walk_turn_left_(90)_stageii.npz",
+    "source_sha256": "119723f7ca4216fd5c79a707766ced969d804d3b0773689ff7adf050a8b95586",
+    "output": "B9_-_walk_turn_left_(90)_stageii.npz",
+    "output_sha256": "6d3202a9abeae760cc1d032221ac2a5de781931765f7e6f853d7b2289af0cd87"
+  },
+  {
+    "source": "/Users/mac/Desktop/github/humanoid-robot/lec5/HW7/AMASS ACCAD \u6570\u636e\u96c6/ACCAD/Female1Running_c3d/C3_-_Run_stageii.npz",
+    "source_sha256": "3da1eab539786ccc138f207aebe34a8a81e7218a593e6fe6cd12b18d6d3c20d5",
+    "output": "C3_-_Run_stageii.npz",
+    "output_sha256": "814dbe4df2dce21995aecfd58d2c7b5ce1a8c9a321325d85348df422008a0dec"
+  },
+  {
+    "source": "/Users/mac/Desktop/github/humanoid-robot/lec5/HW7/AMASS ACCAD \u6570\u636e\u96c6/ACCAD/Female1Running_c3d/C5_-_walk_to_run_stageii.npz",
+    "source_sha256": "07074ed9900add3824388953a0f9b7963c391ff0783e17a561d5118bae8a8041",
+    "output": "C5_-_walk_to_run_stageii.npz",
+    "output_sha256": "472c490eda343215281b749207c2d45c5f76432d3a4f491dd7fec43f52d7a51b"
+  }
+]

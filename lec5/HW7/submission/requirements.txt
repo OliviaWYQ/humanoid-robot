@@ -1,0 +1,15 @@
+numpy==1.26.4
+scipy==1.15.3
+torch
+mujoco
+mink
+qpsolvers[daqp,proxqp]
+smplx
+loop-rate-limiters
+rich
+tqdm
+imageio[ffmpeg]
+natsort
+psutil
+redis
+opencv-python

@@ -1,0 +1,272 @@
+{
+  "motions": [
+    {
+      "file": "B3_-_walk1_stageii.npz",
+      "frames": 229,
+      "fps": 29.934354485776808,
+      "duration_seconds": 7.616666666666666,
+      "local_body_shape": [
+        229,
+        38,
+        3
+      ],
+      "fk_max_error_m": 1.8399421778392266e-06,
+      "joint_limit_violation_rad": 0.0,
+      "max_joint_speed_rad_s": 7.063891410827637,
+      "max_wrist_speed_rad_s": 0.10206636786460876,
+      "min_sole_height_m": -0.002919035187662569,
+      "max_lower_sole_height_m": 0.06068790301799216,
+      "near_ground_foot_speed_median_m_s": 0.05313711293896563,
+      "near_ground_foot_speed_p95_m_s": 1.963575765544077,
+      "self_collision_max_depth_m": 0.0,
+      "self_collision_frame_fraction": 0.0,
+      "wrist_quality": {
+        "left_wrist_roll_joint": {
+          "min_deg": -0.42151889204978943,
+          "max_deg": -0.22701354324817657,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_pitch_joint": {
+          "min_deg": -0.12022587656974792,
+          "max_deg": 0.21943840384483337,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_yaw_joint": {
+          "min_deg": -0.11802491545677185,
+          "max_deg": 0.06497405469417572,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_roll_joint": {
+          "min_deg": 0.1222657561302185,
+          "max_deg": 0.2097088247537613,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_pitch_joint": {
+          "min_deg": -0.09280434995889664,
+          "max_deg": 0.20645788311958313,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_yaw_joint": {
+          "min_deg": -0.06969044357538223,
+          "max_deg": 0.07291672378778458,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        }
+      },
+      "heading_change_deg": -2.9088159665839175,
+      "format_fk_joint_limits_passed": true
+    },
+    {
+      "file": "B9_-_walk_turn_left_(90)_stageii.npz",
+      "frames": 214,
+      "fps": 30.035252643948297,
+      "duration_seconds": 7.091666666666667,
+      "local_body_shape": [
+        214,
+        38,
+        3
+      ],
+      "fk_max_error_m": 1.6398648550186579e-06,
+      "joint_limit_violation_rad": 0.0,
+      "max_joint_speed_rad_s": 6.723226070404053,
+      "max_wrist_speed_rad_s": 0.08684957772493362,
+      "min_sole_height_m": 0.018845645264791645,
+      "max_lower_sole_height_m": 0.05948792044673947,
+      "near_ground_foot_speed_median_m_s": 0.042190279603493794,
+      "near_ground_foot_speed_p95_m_s": 0.6723912201651443,
+      "self_collision_max_depth_m": 0.0,
+      "self_collision_frame_fraction": 0.0,
+      "wrist_quality": {
+        "left_wrist_roll_joint": {
+          "min_deg": -0.40761154890060425,
+          "max_deg": -0.15638326108455658,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_pitch_joint": {
+          "min_deg": -0.15627571940422058,
+          "max_deg": 0.2571120262145996,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_yaw_joint": {
+          "min_deg": -0.12281445413827896,
+          "max_deg": 0.05204600840806961,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_roll_joint": {
+          "min_deg": 0.08291196078062057,
+          "max_deg": 0.36578798294067383,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_pitch_joint": {
+          "min_deg": -0.12435707449913025,
+          "max_deg": 0.2722347378730774,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_yaw_joint": {
+          "min_deg": -0.01497608982026577,
+          "max_deg": 0.13056142628192902,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        }
+      },
+      "heading_change_deg": 102.74692815798271,
+      "format_fk_joint_limits_passed": true
+    },
+    {
+      "file": "C3_-_Run_stageii.npz",
+      "frames": 51,
+      "fps": 29.702970297029704,
+      "duration_seconds": 1.6833333333333333,
+      "local_body_shape": [
+        51,
+        38,
+        3
+      ],
+      "fk_max_error_m": 1.4636109707533151e-06,
+      "joint_limit_violation_rad": 4.863739011540247e-08,
+      "max_joint_speed_rad_s": 17.497474670410156,
+      "max_wrist_speed_rad_s": 0.8876787424087524,
+      "min_sole_height_m": 0.005197525467579509,
+      "max_lower_sole_height_m": 0.18402280195254,
+      "near_ground_foot_speed_median_m_s": 0.09084869602897175,
+      "near_ground_foot_speed_p95_m_s": 0.7491584577856474,
+      "self_collision_max_depth_m": 0.0,
+      "self_collision_frame_fraction": 0.0,
+      "wrist_quality": {
+        "left_wrist_roll_joint": {
+          "min_deg": -0.4630371332168579,
+          "max_deg": 0.43234917521476746,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_pitch_joint": {
+          "min_deg": -0.7508595585823059,
+          "max_deg": -0.18818418681621552,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_yaw_joint": {
+          "min_deg": -0.4524766802787781,
+          "max_deg": 0.46381059288978577,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_roll_joint": {
+          "min_deg": -1.352479338645935,
+          "max_deg": -0.006130179390311241,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_pitch_joint": {
+          "min_deg": -0.9450803399085999,
+          "max_deg": -0.14142245054244995,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_yaw_joint": {
+          "min_deg": -2.026142120361328,
+          "max_deg": 0.22252629697322845,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        }
+      },
+      "heading_change_deg": -8.017926891194165,
+      "format_fk_joint_limits_passed": true
+    },
+    {
+      "file": "C5_-_walk_to_run_stageii.npz",
+      "frames": 163,
+      "fps": 29.953775038520803,
+      "duration_seconds": 5.408333333333333,
+      "local_body_shape": [
+        163,
+        38,
+        3
+      ],
+      "fk_max_error_m": 1.639369896722087e-06,
+      "joint_limit_violation_rad": 0.0,
+      "max_joint_speed_rad_s": 14.729029655456543,
+      "max_wrist_speed_rad_s": 0.1353454291820526,
+      "min_sole_height_m": -0.0002293178023735935,
+      "max_lower_sole_height_m": 0.1171818290788125,
+      "near_ground_foot_speed_median_m_s": 0.03287294036286913,
+      "near_ground_foot_speed_p95_m_s": 1.117606683031467,
+      "self_collision_max_depth_m": 0.0,
+      "self_collision_frame_fraction": 0.0,
+      "wrist_quality": {
+        "left_wrist_roll_joint": {
+          "min_deg": -0.43298056721687317,
+          "max_deg": 0.044766202569007874,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_pitch_joint": {
+          "min_deg": -0.707145094871521,
+          "max_deg": 0.3004438281059265,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "left_wrist_yaw_joint": {
+          "min_deg": -0.26573237776756287,
+          "max_deg": 0.1490507870912552,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_roll_joint": {
+          "min_deg": -0.16267327964305878,
+          "max_deg": 0.2740093767642975,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_pitch_joint": {
+          "min_deg": -0.6569482088088989,
+          "max_deg": 0.15443570911884308,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        },
+        "right_wrist_yaw_joint": {
+          "min_deg": -0.15871502459049225,
+          "max_deg": 0.31418710947036743,
+          "near_limit_fraction": 0.0,
+          "longest_near_limit_frames": 0
+        }
+      },
+      "heading_change_deg": 28.422643498273516,
+      "format_fk_joint_limits_passed": true
+    }
+  ],
+  "amp": {
+    "clips": [
+      "B3_-_walk1_stageii",
+      "B9_-_walk_turn_left_(90)_stageii",
+      "C3_-_Run_stageii",
+      "C5_-_walk_to_run_stageii"
+    ],
+    "sample_shape": [
+      128,
+      240
+    ],
+    "frame_dim": 80,
+    "finite": true,
+    "loader": "lec5/HW8/unitree_lab_amp-main/source/unitree_rl_lab/unitree_rl_lab/tasks/locomotion/amp/motion_dataset.py"
+  },
+  "turn_source_comparison": {
+    "source_heading_change_deg": 102.07420553799041,
+    "robot_heading_change_deg": 102.74692815798271,
+    "difference_deg": 0.6727226199922995
+  },
+  "execution_checks": {
+    "hw8_registered_hw7_profile_four_clips_passed": true,
+    "unit_tests_passed": true
+  }
+}

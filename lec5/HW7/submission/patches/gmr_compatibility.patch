@@ -1,0 +1,58 @@
+diff --git a/general_motion_retargeting/motion_retarget.py b/general_motion_retargeting/motion_retarget.py
+index b68bfdc..47717d9 100644
+--- a/general_motion_retargeting/motion_retarget.py
++++ b/general_motion_retargeting/motion_retarget.py
+@@ -179,7 +179,7 @@ class GeneralMotionRetargeting:
+             curr_error = self.error1()
+             dt = self.configuration.model.opt.timestep
+             vel1 = mink.solve_ik(
+-                self.configuration, self.tasks1, dt, self.solver, self.damping, self.ik_limits
++                self.configuration, self.tasks1, dt, self.solver, damping=self.damping, limits=self.ik_limits
+             )
+             self.configuration.integrate_inplace(vel1, dt)
+             next_error = self.error1()
+@@ -188,7 +188,7 @@ class GeneralMotionRetargeting:
+                 curr_error = next_error
+                 dt = self.configuration.model.opt.timestep
+                 vel1 = mink.solve_ik(
+-                    self.configuration, self.tasks1, dt, self.solver, self.damping, self.ik_limits
++                    self.configuration, self.tasks1, dt, self.solver, damping=self.damping, limits=self.ik_limits
+                 )
+                 self.configuration.integrate_inplace(vel1, dt)
+                 next_error = self.error1()
+@@ -198,7 +198,7 @@ class GeneralMotionRetargeting:
+             curr_error = self.error2()
+             dt = self.configuration.model.opt.timestep
+             vel2 = mink.solve_ik(
+-                self.configuration, self.tasks2, dt, self.solver, self.damping, self.ik_limits
++                self.configuration, self.tasks2, dt, self.solver, damping=self.damping, limits=self.ik_limits
+             )
+             self.configuration.integrate_inplace(vel2, dt)
+             next_error = self.error2()
+@@ -208,7 +208,7 @@ class GeneralMotionRetargeting:
+                 # Solve the IK problem with the second task
+                 dt = self.configuration.model.opt.timestep
+                 vel2 = mink.solve_ik(
+-                    self.configuration, self.tasks2, dt, self.solver, self.damping, self.ik_limits
++                    self.configuration, self.tasks2, dt, self.solver, damping=self.damping, limits=self.ik_limits
+                 )
+                 self.configuration.integrate_inplace(vel2, dt)
+                 
+diff --git a/setup.py b/setup.py
+index c742a49..eb7ef7b 100644
+--- a/setup.py
++++ b/setup.py
+@@ -15,9 +15,10 @@ setup(
+     "loop_rate_limiters",
+     "mink",
+     "mujoco",
+-    "numpy",
+-    "scipy",
+-    "qpsolvers[proxqp]",
++    "torch",
++    "numpy==1.26.4",
++    "scipy==1.15.3",
++    "qpsolvers[daqp,proxqp]",
+     "rich",
+     "tqdm",
+     "opencv-python",
