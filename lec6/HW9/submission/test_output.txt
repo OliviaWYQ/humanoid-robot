@@ -1,0 +1,7 @@
+Test 0 passed: MJLab interfaces are intact.
+Test 1 passed: _adaptive_sampling matches the expected values.
+Test 2 passed: _update_command matches the expected values.
+
+All tests passed for /Users/mac/Desktop/github/unitree_rl_mjlab/src/tasks/tracking/mdp/commands.py.
+All HW9 edge cases passed (CPU stubs).
+All HW9 real mjlab task wiring checks passed.
