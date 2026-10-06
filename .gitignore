@@ -22,3 +22,5 @@ lec7/HW11/sim2sim/**/*.STL
 lec7/HW11/sim2sim/policy/*.onnx
 lec7/HW11/data&model/**/exported/
 lec7/HW11/data&model/**/*.npz
+# lec7/HW11：仿真运行日志（每次运行重新生成，不入库）
+lec7/HW11/sim2sim/MUJOCO_LOG.TXT

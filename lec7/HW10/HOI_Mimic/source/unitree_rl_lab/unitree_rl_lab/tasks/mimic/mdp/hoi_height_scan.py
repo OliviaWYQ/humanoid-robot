@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -40,13 +41,35 @@ def _build_grid_xy(size_xy: tuple[float, float], resolution: float, device: torc
 def _normalize_box_record(entry: dict, idx: int) -> tuple[list[float], list[float], list[float]]:
     """Validate one metadata box and return pos, quat, half_size.
 
-    TODO(student) -- RayCaster assignment:
-    1. Read `pos`, `quat`, and `half_size` from entry.
-    2. If `half_size` is missing but `full_size` exists, convert full_size to half_size.
-    3. Check pos length is 3, quat length is 4, half_size length is 3.
-    4. Raise ValueError with the box index when data is malformed.
     """
-    raise NotImplementedError("TODO(student): implement one-box metadata validation.")
+    if not isinstance(entry, dict):
+        raise ValueError(f"Box {idx}: expected a JSON object.")
+
+    def read_vector(name: str, length: int) -> list[float]:
+        values = entry.get(name)
+        if not isinstance(values, (list, tuple)) or len(values) != length:
+            raise ValueError(f"Box {idx}: {name} must have length {length}.")
+        if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in values):
+            raise ValueError(f"Box {idx}: {name} must contain numbers.")
+        try:
+            result = [float(value) for value in values]
+        except (ValueError, OverflowError) as exc:
+            raise ValueError(f"Box {idx}: {name} contains invalid numbers.") from exc
+        if not all(math.isfinite(value) for value in result):
+            raise ValueError(f"Box {idx}: {name} must contain finite numbers.")
+        return result
+
+    pos = read_vector("pos", 3)
+    quat = read_vector("quat", 4)  # Preserve the metadata's wxyz order.
+    if not any(quat):
+        raise ValueError(f"Box {idx}: quat must be nonzero.")
+    if "half_size" in entry:
+        half_size = read_vector("half_size", 3)
+    else:
+        half_size = [value / 2.0 for value in read_vector("full_size", 3)]
+    if any(value <= 0.0 for value in half_size):
+        raise ValueError(f"Box {idx}: half_size must be positive.")
+    return pos, quat, half_size
 
 
 def _load_boxes(metadata_file: str, device: torch.device) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -57,14 +80,20 @@ def _load_boxes(metadata_file: str, device: torch.device) -> tuple[torch.Tensor,
         box_quat_local: [num_boxes, 4], terrain-body local box orientation in wxyz.
         box_half: [num_boxes, 3], box half extents.
 
-    TODO(student) -- RayCaster assignment:
-    1. Open metadata_file as JSON.
-    2. Read `mjcf_boxes` and check it is a non-empty list.
-    3. Normalize every box record with `_normalize_box_record`.
-    4. Convert lists to torch.float32 tensors on `device`.
-    5. Optionally cache by `(metadata_file, device)` to avoid repeated JSON loading.
     """
-    raise NotImplementedError("TODO(student): implement terrain metadata loading.")
+    # Called during mesh baking, outside the per-step observation path.
+    with Path(metadata_file).open("r", encoding="utf-8") as stream:
+        metadata = json.load(stream)
+    boxes = metadata.get("mjcf_boxes") if isinstance(metadata, dict) else None
+    if not isinstance(boxes, list) or not boxes:
+        raise ValueError(f"{metadata_file}: mjcf_boxes must be a non-empty list.")
+    records = [_normalize_box_record(entry, idx) for idx, entry in enumerate(boxes)]
+    positions, quaternions, half_sizes = zip(*records)
+    return (
+        torch.tensor(positions, dtype=torch.float32, device=device),
+        torch.tensor(quaternions, dtype=torch.float32, device=device),
+        torch.tensor(half_sizes, dtype=torch.float32, device=device),
+    )
 
 
 def _store_scan_cache(

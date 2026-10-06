@@ -3,7 +3,7 @@ from __future__ import annotations
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.sensors import RayCasterCfg, patterns
+from isaaclab.sensors import patterns
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
@@ -14,10 +14,16 @@ from unitree_rl_lab.tasks.mimic.sensors import HoiMergedTerrainRayCasterCfg
 
 @configclass
 class RobotSceneCfg(blind_cfg.RobotSceneCfg):
-    # TODO(student): replace None with a HoiMergedTerrainRayCasterCfg.
-    # Configure the torso-mounted, yaw-aligned grid scanner described in
-    # HOI_MIMIC_HOMEWORK.md. Keep the supplied RayCaster implementation unchanged.
-    height_scanner: HoiMergedTerrainRayCasterCfg | None = None
+    height_scanner: HoiMergedTerrainRayCasterCfg = HoiMergedTerrainRayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/torso_link",
+        ray_alignment="yaw",
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.6]),
+        terrain_prim_path="{ENV_REGEX_NS}/HOI_Terrain",
+        metadata_file=blind_cfg.TERRAIN_META_FILE,
+        use_mjcf_boxes_mesh=True,
+        include_ground_plane=True,
+        rebake_on_reset=False,
+    )
 
 
 @configclass
@@ -33,9 +39,13 @@ class ObservationsCfg:
             noise=Unoise(n_min=-0.05, n_max=0.05),
             history_length=blind_cfg.PROPRIO_HISTORY_LENGTH,
         )
-        # TODO(student): replace None with the policy height_scanner ObsTerm.
-        # The policy term uses mdp.height_scan, clipping, history, and uniform noise.
-        height_scanner: ObsTerm | None = None
+        height_scanner: ObsTerm = ObsTerm(
+            func=mdp.height_scan,
+            params={"sensor_cfg": SceneEntityCfg("height_scanner"), "offset": 0.5},
+            noise=Unoise(n_min=-0.02, n_max=0.02),
+            clip=(-1.0, 5.0),
+            history_length=blind_cfg.PROPRIO_HISTORY_LENGTH,
+        )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2), history_length=blind_cfg.PROPRIO_HISTORY_LENGTH
         )
@@ -62,9 +72,12 @@ class ObservationsCfg:
         body_ori = ObsTerm(func=mdp.robot_body_ori_b, params={"command_name": "motion"})
         base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
         projected_gravity = ObsTerm(func=mdp.projected_gravity, history_length=blind_cfg.PROPRIO_HISTORY_LENGTH)
-        # TODO(student): replace None with the critic height_scanner ObsTerm.
-        # Match the policy height semantics and history, but do not add noise.
-        height_scanner: ObsTerm | None = None
+        height_scanner: ObsTerm = ObsTerm(
+            func=mdp.height_scan,
+            params={"sensor_cfg": SceneEntityCfg("height_scanner"), "offset": 0.5},
+            clip=(-1.0, 5.0),
+            history_length=blind_cfg.PROPRIO_HISTORY_LENGTH,
+        )
         base_ang_vel = ObsTerm(func=mdp.base_ang_vel, history_length=blind_cfg.PROPRIO_HISTORY_LENGTH)
         joint_pos = ObsTerm(func=mdp.joint_pos_rel, history_length=blind_cfg.PROPRIO_HISTORY_LENGTH)
         joint_vel = ObsTerm(func=mdp.joint_vel_rel, history_length=blind_cfg.PROPRIO_HISTORY_LENGTH)
