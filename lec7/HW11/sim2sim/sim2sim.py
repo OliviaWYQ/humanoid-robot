@@ -133,29 +133,33 @@ class DepthImagePipeline:
         h, w = self.shape # h: 目标高度, w: 目标宽度
         # TODO: 使用 cv2.resize，传入原始 image 和目标尺寸 dsize=(宽度, 高度)，
         # 插值方式为cv2.INTER_NEAREST（最近邻插值）
-        image = 
+        image = cv2.resize(
+            image.astype(np.float32, copy=False),
+            dsize=(w, h),
+            interpolation=cv2.INTER_NEAREST,
+        )
 
         # crop image
         y1, y2, x1, x2 = self.crop_region # y1/y2：从图像上方/下方裁掉的像素数；x1/x2：从左侧/右侧裁掉的像素数
         # TODO: 使用切片裁剪图像
-        image = 
+        image = image[y1 : h - y2, x1 : w - x2]
 
         # inpainting image
         mask = (image < 0.2).astype(np.uint8)
         # TODO: inpaint image 使用 cv2.inpaint，传入图像、掩码、修补半径默认3和修补算法cv2.INPAINT_NS
-        image = 
+        image = cv2.inpaint(image, mask, 3, cv2.INPAINT_NS)
 
         # gaussian blur
         # TODO: 使用 cv2.GaussianBlur，传入图像、核大小(3, 3)、X 方向标准差和Y 方向标准差均为1
-        image = 
+        image = cv2.GaussianBlur(image, (3, 3), sigmaX=1, sigmaY=1)
 
         # clip and normalize image
         np.clip(image, a_min=self.near_clip, a_max=self.far_clip, out=image)
         # TODO: 使用 near_clip 和 far_clip 对图像进行线性归一化，
         # 将裁剪后的深度值从 [near_clip, far_clip] 映射到 [0, 1]
-        image = 
+        image = (image - self.near_clip) / (self.far_clip - self.near_clip)
         # self.show_image(image)
-        self.que.append(image)
+        self.que.append(image.astype(np.float32, copy=False))
 
         # resample delay for next frame
         self.resample_delay()
