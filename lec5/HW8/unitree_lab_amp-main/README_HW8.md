@@ -50,11 +50,15 @@ python -m unittest discover -s tests -v
 - 不足三帧时保留任务奖励、有效窗口进入 replay buffer、终止后重新累计。
 - 一次完整 rollout → GAE → PPO 更新 → 判别器更新，参数变化及有限梯度。
 
-本次本机验证：5 项测试全部通过。测试借用了 HW6 的 CPU Python 环境，并将缺少的 Gymnasium 安装在临时目录，未改动 HW6/HW7 环境。
+本次本机验证：5 项测试全部通过（`env_isaaclab`，Python 3.11，torch 2.7.0+cu128、tensordict 0.13.0、Gymnasium 1.2.0 均已就绪，无需额外安装）。
 
 ## Isaac Lab 训练与评估
 
-以下命令在本目录、已安装 Isaac Sim/Lab 的训练环境中执行。本机没有 Isaac Lab，以下仿真步骤尚未运行，未生成训练 checkpoint、曲线或效果视频。
+本机环境：Ubuntu 22.04，2× RTX 4070 12 GB，IsaacLab 0.48.0 + Isaac Sim 5.1.0（kit 安装位于 `/home/star/isaacsim`，经 `IsaacLab/_isaac_sim` 软链接接入）。`conda activate env_isaaclab` 的激活脚本会自动加载 Isaac Sim 的 Python 路径。
+
+机器适配（已配置在 `env_isaaclab/etc/conda/activate.d/setenv.sh`）：
+
+- `UNITREE_MODEL_DIR=/home/star/projects/unitree_model`——机器人 USD 的默认路径 `~/unitree_rl_lab-main/unitree_model` 在本机不存在，不设置会在建环境时报 `FileNotFoundError`。
 
 ```bash
 conda activate env_isaaclab
@@ -68,11 +72,29 @@ python scripts/check_hw8_isaac.py --headless --num_envs 4
 # 短训练检查，再启动正式训练
 python scripts/rsl_rl/train.py --headless \
   --task Unitree-G1-29dof-AMP-WalkToRun --num_envs 64 --max_iterations 2
+
+# 正式训练（推荐本机用法）：单卡 + 崩溃自动重启/断点续训。
+# 包装脚本内含 300 秒无进展看门狗（比 NCCL 600 秒看门狗更快止损），
+# 崩溃后自动从最新 checkpoint 续训。
+bash scripts/train_autoresume.sh
+
+# 等价的裸命令（单卡 1024 环境，30000 次迭代）
 python scripts/rsl_rl/train.py --headless \
-  --task Unitree-G1-29dof-AMP-WalkToRun --num_envs 4096
+  --task Unitree-G1-29dof-AMP-WalkToRun --num_envs 1024
 ```
 
-显存不足时将 `--num_envs` 降为 1024。日志位于 `logs/rsl_rl_amp/unitree_g1_29dof_amp_walk_to_run/<时间戳>/`。
+本机 12 GB 显存无法容纳 4096 环境。最终采用单卡 1024 环境：实测约 0.77 s/迭代、约 3.8 GB 显存，30000 次迭代预计约 6～6.5 小时。日志位于 `logs/rsl_rl_amp/unitree_g1_29dof_amp_walk_to_run/<时间戳>/`。
+
+实测教训（本机，Isaac Sim 5.1 / PhysX 107.3）：
+
+- **双卡分布式在本机不可用**：无论每卡 1024 还是 512 环境，训练都在 1～2 分钟内停滞（NCCL 集体通信双 rank 阻塞、GPU 100% 空转）；`CUDA_LAUNCH_BLOCKING=1` 无法避免且拖慢 55%。死锁随分布式模式出现而非随环境数出现（单卡 1024 环境稳定）。两卡 P2P 仅 5.6 GB/s（卡 1 为 PCIe x4），即便无死锁也仅与单卡同速。如需恢复双卡，改 `scripts/train_autoresume.sh` 顶部的 `NUM_GPUS=2` 并自行验证稳定性。
+- 本机 `list_envs.py` 会自启一个 Kit 实例，与正在进行的训练互斥（Kit 键值数据库锁），需在训练停止后运行。
+
+本机已验证：
+
+- `check_hw8_isaac.py` 通过（profile、FullPlay 配置、80/240 维特征、专家数据、4 步环境交互全部断言成立）。
+- 2 次迭代短训练通过：AMP 判别器 loss、policy/expert score、style reward 等指标正常，checkpoint 正常保存。
+- 正式训练已启动并运行中（单卡 1024 环境、30000 次迭代，经 `scripts/train_autoresume.sh` 包装）。
 
 ```bash
 tensorboard --logdir logs/rsl_rl_amp/unitree_g1_29dof_amp_walk_to_run

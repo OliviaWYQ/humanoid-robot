@@ -10,6 +10,11 @@ with `Unitree` in their name.
 
 """Launch Isaac Sim Simulator first."""
 
+from isaaclab.app import AppLauncher
+
+# launch omniverse app (headless: env listing needs the sim's python extension paths)
+app_launcher = AppLauncher(headless=True)
+simulation_app = app_launcher.app
 
 import importlib
 import pathlib
@@ -102,3 +107,6 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         raise e
+    finally:
+        # close the sim app
+        simulation_app.close()

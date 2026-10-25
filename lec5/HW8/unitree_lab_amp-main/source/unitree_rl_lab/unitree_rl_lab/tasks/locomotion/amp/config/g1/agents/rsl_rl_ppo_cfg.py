@@ -67,7 +67,10 @@ class G1AMPRunnerCfg(RslRlOnPolicyRunnerCfg):
             "discriminator_balance": {
                 "enabled": True,
                 "saturation_threshold": 0.7,
-                "saturated_updates": 0,
+                # Keep at least one update per PPO update even when saturated:
+                # fully pausing removes logit regularization, scores run away,
+                # and the LSQ quality clamps style reward to 0 forever (deadlock).
+                "saturated_updates": 1,
             },
             "discriminator": {
                 "hidden_dims": [512, 256],

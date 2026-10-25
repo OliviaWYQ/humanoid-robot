@@ -48,7 +48,8 @@ try:
             obs, rewards, _, _ = wrapper.step(torch.zeros(
                 args.num_envs, wrapper.num_actions, device=wrapper.device))
             assert torch.isfinite(obs['amp']).all() and torch.isfinite(rewards).all()
-        print('HW8 Isaac Lab check passed: profile, FullPlay, 80/240 dimensions, data and environment steps.')
+        # flush=True: kit's shutdown may exit the process without flushing buffered stdout
+        print('HW8 Isaac Lab check passed: profile, FullPlay, 80/240 dimensions, data and environment steps.', flush=True)
     finally:
         env.close()
 finally:
